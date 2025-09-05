@@ -1,3 +1,4 @@
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -26,13 +27,7 @@ class MyApp extends StatelessWidget {
         builder: (context, themeProvider, child) {
           return MaterialApp(
             title: 'KZL Shop',
-            theme: ThemeData(
-              primarySwatch: Colors.amber,
-              visualDensity: VisualDensity.adaptivePlatformDensity,
-              textTheme: GoogleFonts.latoTextTheme(
-                Theme.of(context).textTheme,
-              ),
-            ),
+            theme: themeProvider.getTheme(),
             home: const AuthWrapper(),
           );
         },
@@ -67,6 +62,26 @@ class ThemeProvider with ChangeNotifier {
   ThemeMode _themeMode = ThemeMode.light;
 
   ThemeMode get themeMode => _themeMode;
+
+  getTheme() {
+    final textTheme = GoogleFonts.latoTextTheme();
+    const primaryColor = Colors.amber;
+    if (_themeMode == ThemeMode.dark) {
+      return ThemeData(
+        brightness: Brightness.dark,
+        primarySwatch: primaryColor,
+        visualDensity: VisualDensity.adaptivePlatformDensity,
+        textTheme: textTheme.apply(bodyColor: Colors.white, displayColor: Colors.white),
+      );
+    } else {
+      return ThemeData(
+        brightness: Brightness.light,
+        primarySwatch: primaryColor,
+        visualDensity: VisualDensity.adaptivePlatformDensity,
+        textTheme: textTheme,
+      );
+    }
+  }
 
   void toggleTheme() {
     _themeMode = _themeMode == ThemeMode.light ? ThemeMode.dark : ThemeMode.light;

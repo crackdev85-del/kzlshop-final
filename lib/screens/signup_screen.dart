@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -13,6 +14,10 @@ class SignupScreen extends StatefulWidget {
 class _SignupScreenState extends State<SignupScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _shopNameController = TextEditingController();
+  final _phoneController = TextEditingController();
+  final _addressController = TextEditingController();
+
   final _auth = FirebaseAuth.instance;
   final _firestore = FirebaseFirestore.instance;
   bool _isLoading = false;
@@ -31,6 +36,9 @@ class _SignupScreenState extends State<SignupScreen> {
       // Create a document for the user in Firestore
       await _firestore.collection('users').doc(userCredential.user!.uid).set({
         'email': userCredential.user!.email,
+        'shopName': _shopNameController.text.trim(),
+        'phoneNumber': _phoneController.text.trim(),
+        'address': _addressController.text.trim(),
         'role': 'user', // Default role
       });
 
@@ -98,6 +106,34 @@ class _SignupScreenState extends State<SignupScreen> {
                       prefixIcon: Icon(Icons.lock),
                     ),
                     obscureText: true,
+                  ),
+                  const SizedBox(height: 16.0),
+                   TextField(
+                    controller: _shopNameController,
+                    decoration: const InputDecoration(
+                      labelText: 'Shop Name',
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.store),
+                    ),
+                  ),
+                  const SizedBox(height: 16.0),
+                  TextField(
+                    controller: _phoneController,
+                    decoration: const InputDecoration(
+                      labelText: 'Phone Number',
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.phone),
+                    ),
+                    keyboardType: TextInputType.phone,
+                  ),
+                  const SizedBox(height: 16.0),
+                  TextField(
+                    controller: _addressController,
+                    decoration: const InputDecoration(
+                      labelText: 'Address',
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.location_on),
+                    ),
                   ),
                   const SizedBox(height: 24),
                   _isLoading
