@@ -1,47 +1,40 @@
-{
-  pkgs, 
-  ...
-}: {
-  channel = "stable-23.11";
-  
-  environment.systemPackages = [
-    pkgs.flutter
-    pkgs.dart
-    pkgs.git
-    pkgs.gh
-    pkgs.zulu
-    pkgs.gradle
-  ];
-  
-  environment.variables = {
-    JAVA_HOME = "${pkgs.zulu}";
-    GRADLE_HOME = "${pkgs.gradle}";
-    PATH = "$PATH:${pkgs.gradle}/bin";
-  };
-  
-  services.ports = [
-    {
-      port = 8080;
-      onOpen = "ignore";
-    }
-    {
-      port = 9100;
-      onOpen = "ignore";
-      visibility = "private";
-    }
-  ];
-  
-  workspace.onStart = {
-    flutter-doctor = "flutter doctor";
-    start-flutter = "flutter run --web-port 6006";
-  };
-  
-  previews = {
-    enable = true;
-    previews = [
-      {
-        port = 6006;
-      }
-    ];
-  };
+# To learn more about how to use Nix to configure your environment
+# see: https://firebase.google.com/docs/studio/customize-workspace
+{ pkgs, ... }: {
+ # Which nixpkgs channel to use.
+ channel = "stable-24.05"; # or "unstable"
+ # Use https://search.nixos.org/packages to find packages
+ packages = [
+   pkgs.jdk21
+   pkgs.unzip
+ ];
+ # Sets environment variables in the workspace
+ env = {};
+ idx = {
+   # Search for the extensions you want on https://open-vsx.org/ and use "publisher.id"
+   extensions = [
+     "Dart-Code.flutter"
+     "Dart-Code.dart-code"
+   ];
+   workspace = {
+     # Runs when a workspace is first created with this `dev.nix` file
+     onCreate = { };
+     # To run something each time the workspace is (re)started, use the `onStart` hook
+   };
+   # Enable previews and customize configuration
+   previews = {
+     enable = true;
+     previews = {
+       web = {
+         command = ["flutter" "run" "--machine" "-d" "web-server" "--web-hostname" "0.0.0.0" "--web-port" "$PORT"];
+         manager = "flutter";
+       };
+       android = {
+         command = ["flutter" "run" "--machine" "-d" "android" "-d" "localhost:5555"];
+         manager = "flutter";
+       };
+     };
+   };
+ };
 }
+
