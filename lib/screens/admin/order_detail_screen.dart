@@ -1,2 +1,170 @@
-\nimport \'package:cloud_firestore/cloud_firestore.dart\';\nimport \'package:flutter/material.dart\';\nimport \'package:intl/intl.dart\';\nimport \'package:myapp/constants.dart\';\n\nclass OrderDetailScreen extends StatefulWidget {\n  final String orderId;\n\n  const OrderDetailScreen({super.key, required this.orderId});\n\n  @override\n  State<OrderDetailScreen> createState() => _OrderDetailScreenState();\n}\n\nclass _OrderDetailScreenState extends State<OrderDetailScreen> {\n  DocumentSnapshot? _order;\n  bool _isLoading = true;\n  String? _selectedStatus;\n\n  final List<String> _orderStatuses = [\n    \'Order Placed\',\n    \'Processing\',\n    \'Shipped\',\n    \'Completed\',\n    \'Cancelled\',\n  ];\n\n  @override\n  void initState() {\n    super.initState();\n    _fetchOrderDetails();\n  }\n\n  Future<void> _fetchOrderDetails() async {\n    try {\n      final doc = await FirebaseFirestore.instance.collection(ORDERS_COLLECTION_PATH).doc(widget.orderId).get();\n      if (mounted) {\n        setState(() {\n          _order = doc;\n          _selectedStatus = (doc.data() as Map<String, dynamic>)[\'status\'];\n          _isLoading = false;\n        });\n      }\n    } catch (e) {\n      ScaffoldMessenger.of(context).showSnackBar(\n        SnackBar(content: Text(\'Error fetching order details: $e\')),\n      );\n      setState(() {\n        _isLoading = false;\n      });\n    }\n  }\n\n  Future<void> _updateStatus() async {\n    if (_selectedStatus == null) return;\n\n    try {\n      await FirebaseFirestore.instance.collection(ORDERS_COLLECTION_PATH).doc(widget.orderId).update({\n        \'status\': _selectedStatus,\n        \'updatedAt\': FieldValue.serverTimestamp(),\n      });\n      ScaffoldMessenger.of(context).showSnackBar(\n        const SnackBar(content: Text(\'Order status updated successfully!\')),
-      );\n      Navigator.of(context).pop();\n    } catch (e) {\n      ScaffoldMessenger.of(context).showSnackBar(\n        SnackBar(content: Text(\'Failed to update status: $e\')),\n      );\n    }\n  }\n\n  @override\n  Widget build(BuildContext context) {\n    if (_isLoading) {\n      return Scaffold(\n        appBar: AppBar(title: const Text(\'Order Details\')),\n        body: const Center(child: CircularProgressIndicator()),\n      );\n    }\n\n    if (_order == null) {\n      return Scaffold(\n        appBar: AppBar(title: const Text(\'Order Details\')),\n        body: const Center(child: Text(\'Order not found!\')),\n      );\n    }\n\n    final orderData = _order!.data() as Map<String, dynamic>;\n    final Timestamp timestamp = orderData[\'createdAt\'] ?? Timestamp.now();\n    final String formattedDate = DateFormat(\'dd MMM, yyyy, hh:mm a\').format(timestamp.toDate());\n\n    return Scaffold(\n      appBar: AppBar(\n        title: const Text(\'Order Details\'),\n      ),\n      body: SingleChildScrollView(\n        padding: const EdgeInsets.all(16.0),\n        child: Column(\n          crossAxisAlignment: CrossAxisAlignment.start,\n          children: [\n            Text(\'Order ID: ${widget.orderId}\', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),\n            const SizedBox(height: 10),\n            Text(\'Placed on: $formattedDate\'),\n            Text(\'User: ${orderData[\'userName\'] ?? \'N/A\'}\'),\n            Text(\'User ID: ${orderData[\'userId\'] ?? \'N/A\'}\'),\n            const Divider(height: 30),\n\n            const Text(\'Items:\', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),\n            if (orderData.containsKey(\'items\') && orderData[\'items\'] is List) ...{\n              for (var item in orderData[\'items\']) {\n                final product = item as Map<String, dynamic>;\n                yield ListTile(\n                  title: Text(product[\'productName\'] ?? \'Unknown Product\'),\n                  subtitle: Text(\'Quantity: ${product[\'quantity\']}\'),\n                  trailing: Text(\'\$${product[\'price\']}\'),\n                );\n              }\n            },\n            const Divider(height: 30),\n\n            Text(\'Total Amount: \$${orderData[\'totalAmount\'] ?? 0}\', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),\n            const SizedBox(height: 30),\n\n            const Text(\'Update Status:\', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),\n            const SizedBox(height: 10),\n            DropdownButtonFormField<String>(\n              value: _selectedStatus,\n              decoration: const InputDecoration(border: OutlineInputBorder()),\n              items: _orderStatuses.map((status) {\n                return DropdownMenuItem<String>(\n                  value: status,\n                  child: Text(status),\n                );\n              }).toList(),\n              onChanged: (value) {\n                setState(() {\n                  _selectedStatus = value;\n                });\n              },\n            ),\n            const SizedBox(height: 20),\n            ElevatedButton(\n              onPressed: _updateStatus,\n              child: const Text(\'Save Status\'),\n              style: ElevatedButton.styleFrom(minimumSize: const Size(double.infinity, 50)),\n            ),\n          ],\n        ),\n      ),\n    );\n  }\n}\n
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:myapp/constants.dart';
+
+class OrderDetailScreen extends StatefulWidget {
+  final String orderId;
+
+  const OrderDetailScreen({super.key, required this.orderId});
+
+  @override
+  State<OrderDetailScreen> createState() => _OrderDetailScreenState();
+}
+
+class _OrderDetailScreenState extends State<OrderDetailScreen> {
+  DocumentSnapshot? _order;
+  bool _isLoading = true;
+  String? _selectedStatus;
+
+  final List<String> _orderStatuses = [
+    'Order Placed',
+    'Processing',
+    'Shipped',
+    'Completed',
+    'Cancelled',
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchOrderDetails();
+  }
+
+  Future<void> _fetchOrderDetails() async {
+    try {
+      final doc = await FirebaseFirestore.instance.collection(ORDERS_COLLECTION_PATH).doc(widget.orderId).get();
+      if (mounted) {
+        setState(() {
+          _order = doc;
+          _selectedStatus = (doc.data() as Map<String, dynamic>)['status'];
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error fetching order details: $e')),
+        );
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _updateStatus() async {
+    if (_selectedStatus == null) return;
+
+    try {
+      await FirebaseFirestore.instance.collection(ORDERS_COLLECTION_PATH).doc(widget.orderId).update({
+        'status': _selectedStatus,
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+      if(mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Order status updated successfully!')),
+        );
+        Navigator.of(context).pop();
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to update status: $e')),
+        );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isLoading) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Order Details')),
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (_order == null || !_order!.exists) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Order Details')),
+        body: const Center(child: Text('Order not found!')),
+      );
+    }
+
+    final orderData = _order!.data() as Map<String, dynamic>;
+    final Timestamp timestamp = orderData['createdAt'] ?? Timestamp.now();
+    final String formattedDate = DateFormat('dd MMM, yyyy, hh:mm a').format(timestamp.toDate());
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Order Details'),
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Order ID: ${widget.orderId}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            const SizedBox(height: 10),
+            Text('Placed on: $formattedDate'),
+            const Divider(height: 30),
+
+            // Shipping Details Section
+            const Text('Shipping Details', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+            const SizedBox(height: 8),
+            Text('User: ${orderData['userName'] ?? 'N/A'}'),
+            Text('Address: ${orderData['address'] ?? 'N/A'}'),
+            Text('Township: ${orderData['township'] ?? 'N/A'}'),
+            Text('Phone: ${orderData['phoneNumber'] ?? 'N/A'}'),
+            const Divider(height: 30),
+
+            const Text('Items:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+            if (orderData.containsKey('items') && orderData['items'] is List) ...[
+              ...List.generate(orderData['items'].length, (index) {
+                  final item = orderData['items'][index] as Map<String, dynamic>;
+                  return ListTile(
+                    title: Text(item['productName'] ?? 'Unknown Product'),
+                    subtitle: Text('Quantity: ${item['quantity']}'),
+                    trailing: Text('MMK ${item['price']}'),
+                  );
+              })
+            ],
+            const Divider(height: 30),
+
+            Align(
+              alignment: Alignment.centerRight,
+              child: Text('Total Amount: MMK ${orderData['totalAmount'] ?? 0}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+            ),
+            const SizedBox(height: 30),
+
+            const Text('Update Status:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            const SizedBox(height: 10),
+            DropdownButtonFormField<String>(
+              value: _selectedStatus,
+              decoration: const InputDecoration(border: OutlineInputBorder()),
+              items: _orderStatuses.map((status) {
+                return DropdownMenuItem<String>(
+                  value: status,
+                  child: Text(status),
+                );
+              }).toList(),
+              onChanged: (value) {
+                setState(() {
+                  _selectedStatus = value;
+                });
+              },
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _updateStatus,
+              child: const Text('Save Status'),
+              style: ElevatedButton.styleFrom(minimumSize: const Size(double.infinity, 50)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
