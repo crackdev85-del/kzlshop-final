@@ -23,20 +23,11 @@ class DefaultFirebaseOptions {
       case TargetPlatform.android:
         return android;
       case TargetPlatform.iOS:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for ios - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return ios;
       case TargetPlatform.macOS:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for macos - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return macos;
       case TargetPlatform.windows:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for windows - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return windows;
       case TargetPlatform.linux:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for linux - '
@@ -65,6 +56,38 @@ class DefaultFirebaseOptions {
     authDomain: 'kzlshop.firebaseapp.com',
     storageBucket: 'kzlshop.firebasestorage.app',
     measurementId: 'G-21BMCWD2D9',
+  );
+
+  static const FirebaseOptions macos = FirebaseOptions(
+    apiKey: 'AIzaSyCcSBc9XVUcPfl4i-k1xw7RdufRMNtritM',
+    appId: '1:405459867937:ios:c9236942d29e5dd3420660',
+    messagingSenderId: '405459867937',
+    projectId: 'kzlshop',
+    storageBucket: 'kzlshop.firebasestorage.app',
+    androidClientId: '405459867937-bo3j3lfnm91ec11habdn837cc5rb3r84.apps.googleusercontent.com',
+    iosClientId: '405459867937-hei7ab5su64umpgg5ak0g8alnmo94fri.apps.googleusercontent.com',
+    iosBundleId: 'com.example.myapp',
+  );
+
+  static const FirebaseOptions ios = FirebaseOptions(
+    apiKey: 'AIzaSyCcSBc9XVUcPfl4i-k1xw7RdufRMNtritM',
+    appId: '1:405459867937:ios:c9236942d29e5dd3420660',
+    messagingSenderId: '405459867937',
+    projectId: 'kzlshop',
+    storageBucket: 'kzlshop.firebasestorage.app',
+    androidClientId: '405459867937-bo3j3lfnm91ec11habdn837cc5rb3r84.apps.googleusercontent.com',
+    iosClientId: '405459867937-hei7ab5su64umpgg5ak0g8alnmo94fri.apps.googleusercontent.com',
+    iosBundleId: 'com.example.myapp',
+  );
+
+  static const FirebaseOptions windows = FirebaseOptions(
+    apiKey: 'AIzaSyAr0hjKEwOlzWPDGjDgHWwqmxZ9SqV_h30',
+    appId: '1:405459867937:web:85758b67ba842508420660',
+    messagingSenderId: '405459867937',
+    projectId: 'kzlshop',
+    authDomain: 'kzlshop.firebaseapp.com',
+    storageBucket: 'kzlshop.firebasestorage.app',
+    measurementId: 'G-WD93GEBM8E',
   );
 
 }

@@ -1,12 +1,1 @@
-import 'package:flutter/material.dart';
-
-class OrdersTab extends StatelessWidget {
-  const OrdersTab({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(
-      child: Text('Orders Tab'),
-    );
-  }
-}
+\nimport \'package:cloud_firestore/cloud_firestore.dart\';\nimport \'package:flutter/material.dart\';\nimport \'package:intl/intl.dart\';\nimport \'package:myapp/constants.dart\';\nimport \'package:myapp/screens/admin/order_detail_screen.dart\';\n\nclass OrdersTab extends StatelessWidget {\n  const OrdersTab({super.key});\n\n  @override\n  Widget build(BuildContext context) {\n    return Scaffold(\n      body: StreamBuilder<QuerySnapshot>(\n        stream: FirebaseFirestore.instance.collection(ORDERS_COLLECTION_PATH).orderBy(\'createdAt\', descending: true).snapshots(),\n        builder: (context, snapshot) {\n          if (snapshot.hasError) {\n            return const Center(child: Text(\'Something went wrong\'));\n          }\n\n          if (snapshot.connectionState == ConnectionState.waiting) {\n            return const Center(child: CircularProgressIndicator());\n          }\n\n          if (snapshot.data!.docs.isEmpty) {\n            return const Center(child: Text(\'No orders found.\'));\n          }\n\n          return ListView.builder(\n            itemCount: snapshot.data!.docs.length,\n            itemBuilder: (context, index) {\n              final doc = snapshot.data!.docs[index];\n              final order = doc.data() as Map<String, dynamic>;\n\n              final Timestamp timestamp = order[\'createdAt\'] ?? Timestamp.now();\n              final String formattedDate = DateFormat(\'dd MMM, yyyy\').format(timestamp.toDate());\n\n              return Card(\n                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),\n                child: ListTile(\n                  onTap: () {\n                    Navigator.of(context).push(\n                      MaterialPageRoute(\n                        builder: (context) => OrderDetailScreen(orderId: doc.id),\n                      ),\n                    );\n                  },\n                  title: Text(\'Order by: ${order[\'userName\'] ?? \'N/A\'}\', style: const TextStyle(fontWeight: FontWeight.bold)),\n                  subtitle: Column(\n                    crossAxisAlignment: CrossAxisAlignment.start,\n                    children: [\n                      Text(\'Status: ${order[\'status\'] ?? \'Pending\'}\'),\n                      Text(\'Date: $formattedDate\'),\n                    ],\n                  ),\n                  trailing: const Icon(Icons.arrow_forward_ios),\n                ),\n              );\n            },          );\n        },      ),\n    );\n  }\n}\n

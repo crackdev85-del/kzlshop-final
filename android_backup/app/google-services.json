@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "405459867937",
+    "project_id": "kzlshop",
+    "storage_bucket": "kzlshop.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:405459867937:android:cded0bb72983e2d9420660",
+        "android_client_info": {
+          "package_name": "com.example.myapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "405459867937-si9se8hqqlm2sg19tt1gsoeaif4msfbg.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDCpxwrft4bVU3g2q2cGb-3TghMBPRp0Ms"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "405459867937-si9se8hqqlm2sg19tt1gsoeaif4msfbg.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

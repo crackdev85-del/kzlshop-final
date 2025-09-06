@@ -1,1 +1,34 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"kzlshop","appId":"1:405459867937:android:cded0bb72983e2d9420660","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"kzlshop","configurations":{"android":"1:405459867937:android:cded0bb72983e2d9420660","web":"1:405459867937:web:649bd2384a6ec739420660"}}}}}}
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "kzlshop",
+          "appId": "1:405459867937:android:cded0bb72983e2d9420660",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "kzlshop",
+          "configurations": {
+            "android": "1:405459867937:android:cded0bb72983e2d9420660",
+            "ios": "1:405459867937:ios:c9236942d29e5dd3420660",
+            "macos": "1:405459867937:ios:c9236942d29e5dd3420660",
+            "web": "1:405459867937:web:649bd2384a6ec739420660",
+            "windows": "1:405459867937:web:85758b67ba842508420660"
+          }
+        }
+      }
+    }
+  },
+  "firestore": {
+    "database": "(default)",
+    "location": "nam5",
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "remoteconfig": {
+    "template": "remoteconfig.template.json"
+  }
+}

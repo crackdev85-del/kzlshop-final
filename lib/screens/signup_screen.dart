@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:myapp/constants.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -14,41 +15,117 @@ class SignupScreen extends StatefulWidget {
 class _SignupScreenState extends State<SignupScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _usernameController = TextEditingController();
   final _shopNameController = TextEditingController();
   final _phoneController = TextEditingController();
   final _addressController = TextEditingController();
+  final _locationController = TextEditingController();
+
+  String? _selectedTownship;
+  List<DocumentSnapshot> _townships = [];
 
   final _auth = FirebaseAuth.instance;
   final _firestore = FirebaseFirestore.instance;
   bool _isLoading = false;
 
+  @override
+  void initState() {
+    super.initState();
+    _fetchTownships();
+  }
+
+  Future<void> _fetchTownships() async {
+    try {
+      final snapshot = await _firestore.collection(TOWNSHIPS_COLLECTION_PATH).get();
+      if (mounted) {
+        setState(() {
+          _townships = snapshot.docs;
+        });
+      }
+    } catch (e) {
+      // Handle error, maybe show a snackbar
+      print("Error fetching townships: $e");
+    }
+  }
+
+  void _showError(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+      ),
+    );
+  }
+
   Future<void> _signup() async {
     if (!mounted) return;
+
+    // Validation
+    if (_emailController.text.trim().isEmpty || _passwordController.text.trim().isEmpty) {
+      _showError('Email နှင့် password ထည့်ပါ။');
+      return;
+    }
+    if (_passwordController.text.trim().length < 6) {
+      _showError('Password သည် အနည်းဆုံး 6 အက္ခရာ ဖြစ်ရမည်။');
+      return;
+    }
+    if (_usernameController.text.trim().isEmpty) {
+      _showError('Username ထည့်ရန်လိုအပ်သည် (required)');
+      return;
+    }
+    if (_shopNameController.text.trim().isEmpty) {
+      _showError('ဆိုင်အမည် ထည့်ရန်လိုအပ်သည် (required)');
+      return;
+    }
+    if (_phoneController.text.trim().isEmpty) {
+      _showError('ဖုန်းနံပါတ် ထည့်ရန်လိုအပ်သည် (required)');
+      return;
+    }
+    if (_addressController.text.trim().isEmpty) {
+      _showError('လိပ်စာ ထည့်ရန်လိုအပ်သည် (required)');
+      return;
+    }
+    if (_locationController.text.trim().isEmpty) {
+      _showError('Location / Map address ထည့်ရန်လိုအပ်သည် (required)');
+      return;
+    }
+    if (_selectedTownship == null || _selectedTownship!.isEmpty) {
+      _showError('မြို့နယ် (Township) ကိုရွေးချယ်ပါ။');
+      return;
+    }
+    
     setState(() {
       _isLoading = true;
     });
+
     try {
       UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
 
+      await userCredential.user?.updateDisplayName(_usernameController.text.trim());
+
       // Create a document for the user in Firestore
-      await _firestore.collection('users').doc(userCredential.user!.uid).set({
+      await _firestore.collection(USERS_COLLECTION_PATH).doc(userCredential.user!.uid).set({
         'email': userCredential.user!.email,
+        'username': _usernameController.text.trim(),
+        'displayName': _usernameController.text.trim(),
         'shopName': _shopNameController.text.trim(),
         'phoneNumber': _phoneController.text.trim(),
         'address': _addressController.text.trim(),
+        'location': _locationController.text.trim(),
+        'township': _selectedTownship,
         'role': 'user', // Default role
+        'createdAt': FieldValue.serverTimestamp(),
       });
 
       if (!mounted) return;
-      Navigator.pop(context); // Go back to login screen, AuthWrapper will handle the rest
+      Navigator.pop(context); // Go back to login screen
+
     } on FirebaseAuthException catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.message ?? 'Signup failed')),
-      );
+      _showError(e.message ?? 'Signup failed');
     } finally {
       if (mounted) {
         setState(() {
@@ -88,53 +165,45 @@ class _SignupScreenState extends State<SignupScreen> {
                     ),
                   ),
                   const SizedBox(height: 40),
-                  TextField(
-                    controller: _emailController,
-                    decoration: const InputDecoration(
-                      labelText: 'Email',
-                      border: OutlineInputBorder(),
-                      prefixIcon: Icon(Icons.email),
-                    ),
-                    keyboardType: TextInputType.emailAddress,
-                  ),
+                  
+                  // Form Fields
+                  _buildTextField(controller: _emailController, label: 'Email', icon: Icons.email, keyboardType: TextInputType.emailAddress),
                   const SizedBox(height: 16.0),
-                  TextField(
-                    controller: _passwordController,
-                    decoration: const InputDecoration(
-                      labelText: 'Password',
-                      border: OutlineInputBorder(),
-                      prefixIcon: Icon(Icons.lock),
-                    ),
-                    obscureText: true,
-                  ),
+                  _buildTextField(controller: _passwordController, label: 'Password', icon: Icons.lock, obscureText: true),
                   const SizedBox(height: 16.0),
-                   TextField(
-                    controller: _shopNameController,
-                    decoration: const InputDecoration(
-                      labelText: 'Shop Name',
-                      border: OutlineInputBorder(),
-                      prefixIcon: Icon(Icons.store),
-                    ),
-                  ),
+                  _buildTextField(controller: _usernameController, label: 'Username', icon: Icons.person),
                   const SizedBox(height: 16.0),
-                  TextField(
-                    controller: _phoneController,
-                    decoration: const InputDecoration(
-                      labelText: 'Phone Number',
-                      border: OutlineInputBorder(),
-                      prefixIcon: Icon(Icons.phone),
-                    ),
-                    keyboardType: TextInputType.phone,
-                  ),
+                  _buildTextField(controller: _shopNameController, label: 'ဆိုင်အမည်', icon: Icons.store),
                   const SizedBox(height: 16.0),
-                  TextField(
-                    controller: _addressController,
+                  _buildTextField(controller: _phoneController, label: 'ဖုန်းနံပါတ်', icon: Icons.phone, keyboardType: TextInputType.phone),
+                  const SizedBox(height: 16.0),
+                  _buildTextField(controller: _addressController, label: 'လိပ်စာ', icon: Icons.location_on),
+                  const SizedBox(height: 16.0),
+                  _buildTextField(controller: _locationController, label: 'Location / Map address', icon: Icons.map),
+                  const SizedBox(height: 16.0),
+                  
+                  // Township Dropdown
+                  DropdownButtonFormField<String>(
+                    value: _selectedTownship,
                     decoration: const InputDecoration(
-                      labelText: 'Address',
+                      labelText: 'မြို့နယ်ရွေးရန်',
                       border: OutlineInputBorder(),
-                      prefixIcon: Icon(Icons.location_on),
+                      prefixIcon: Icon(Icons.location_city),
                     ),
+                    items: _townships.map((doc) {
+                      final data = doc.data() as Map<String, dynamic>;
+                      return DropdownMenuItem<String>(
+                        value: doc.id,
+                        child: Text(data['name'] ?? 'Unknown'),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedTownship = value;
+                      });
+                    },
                   ),
+
                   const SizedBox(height: 24),
                   _isLoading
                       ? const Center(child: CircularProgressIndicator())
@@ -167,6 +236,25 @@ class _SignupScreenState extends State<SignupScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+    bool obscureText = false,
+    TextInputType keyboardType = TextInputType.text,
+  }) {
+    return TextField(
+      controller: controller,
+      decoration: InputDecoration(
+        labelText: label,
+        border: const OutlineInputBorder(),
+        prefixIcon: Icon(icon),
+      ),
+      obscureText: obscureText,
+      keyboardType: keyboardType,
     );
   }
 }
