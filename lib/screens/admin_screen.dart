@@ -1,4 +1,74 @@
-\nimport \'package:flutter/material.dart\';\nimport \'package:myapp/screens/admin/announce
 
+import 'package:flutter/material.dart';
+import 'package:myapp/screens/admin/announcements_tab.dart';
+import 'package:myapp/screens/admin/categories_tab.dart';
+import 'package:myapp/screens/admin/orders_tab.dart';
+import 'package:myapp/screens/admin/products_tab.dart';
+import 'package:myapp/screens/admin/reports_tab.dart';
+import 'package:myapp/screens/admin/settings_tab.dart';
+import 'package:myapp/screens/admin/townships_tab.dart';
+import 'package:myapp/screens/admin/users_tab.dart';
 
-ments_tab.dart\';\nimport \'package:myapp/screens/admin/categories_tab.dart\';\nimport \'package:myapp/screens/admin/orders_tab.dart\';\nimport \'package:myapp/screens/admin/products_tab.dart\';\nimport \'package:myapp/screens/admin/reports_tab.dart\';\nimport \'package:myapp/screens/admin/settings_tab.dart\';\nimport \'package:myapp/screens/admin/townships_tab.dart\';\nimport \'package:myapp/screens/admin/users_tab.dart\';\n\nclass AdminScreen extends StatefulWidget {\n  const AdminScreen({super.key});\n\n  @override\n  State<AdminScreen> createState() => _AdminScreenState();\n}\n\nclass _AdminScreenState extends State<AdminScreen> with SingleTickerProviderStateMixin {\n  late TabController _tabController;\n\n  @override\n  void initState() {\n    super.initState();\n    _tabController = TabController(length: 8, vsync: this);\n  }\n\n  @override\n  void dispose() {\n    _tabController.dispose();\n    super.dispose();\n  }\n\n  @override\n  Widget build(BuildContext context) {\n    final theme = Theme.of(context);\n\n    return Scaffold(\n      appBar: AppBar(\n        title: Text(\'Admin Panel\', style: theme.textTheme.titleLarge?.copyWith(color: theme.colorScheme.onPrimary)),\n        bottom: TabBar(\n          controller: _tabController,\n          isScrollable: true,\n          indicatorColor: theme.colorScheme.onPrimary,\n          labelColor: theme.colorScheme.onPrimary,\n          unselectedLabelColor: theme.colorScheme.onPrimary.withAlpha(178),\n          tabs: const [\n            Tab(icon: Icon(Icons.fastfood), text: \'Products\'),\n            Tab(icon: Icon(Icons.category), text: \'Categories\'),\n            Tab(icon: Icon(Icons.receipt), text: \'Orders\'),\n            Tab(icon: Icon(Icons.people), text: \'Users\'),\n            Tab(icon: Icon(Icons.location_city), text: \'Townships\'),\n            Tab(icon: Icon(Icons.announcement), text: \'Announcements\'),\n            Tab(icon: Icon(Icons.bar_chart), text: \'Reports\'),\n            Tab(icon: Icon(Icons.settings), text: \'Settings\'),\n          ],\n        ),\n      ),\n      body: TabBarView(\n        controller: _tabController,\n        children: const [\n          ProductsTab(),\n          CategoriesTab(),\n          OrdersTab(),\n          UsersTab(),\n          TownshipsTab(),\n          AnnouncementsTab(),\n          ReportsTab(),\n          SettingsTab(),\n        ],\n      ),\n    );\n  }\n}\n
+class AdminScreen extends StatefulWidget {
+  const AdminScreen({super.key});
+
+  @override
+  State<AdminScreen> createState() => _AdminScreenState();
+}
+
+class _AdminScreenState extends State<AdminScreen> with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 8, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Admin Panel', style: theme.textTheme.titleLarge?.copyWith(color: theme.colorScheme.onPrimary)),
+        bottom: TabBar(
+          controller: _tabController,
+          isScrollable: true,
+          indicatorColor: theme.colorScheme.onPrimary,
+          labelColor: theme.colorScheme.onPrimary,
+          unselectedLabelColor: theme.colorScheme.onPrimary.withAlpha(178),
+          tabs: const [
+            Tab(icon: Icon(Icons.fastfood), text: 'Products'),
+            Tab(icon: Icon(Icons.category), text: 'Categories'),
+            Tab(icon: Icon(Icons.receipt), text: 'Orders'),
+            Tab(icon: Icon(Icons.people), text: 'Users'),
+            Tab(icon: Icon(Icons.location_city), text: 'Townships'),
+            Tab(icon: Icon(Icons.announcement), text: 'Announcements'),
+            Tab(icon: Icon(Icons.bar_chart), text: 'Reports'),
+            Tab(icon: Icon(Icons.settings), text: 'Settings'),
+          ],
+        ),
+      ),
+      body: TabBarView(
+        controller: _tabController,
+        children: const [
+          ProductsTab(),
+          CategoriesTab(),
+          OrdersTab(),
+          UsersTab(),
+          TownshipsTab(),
+          AnnouncementsTab(),
+          ReportsTab(),
+          SettingsTab(),
+        ],
+      ),
+    );
+  }
+}

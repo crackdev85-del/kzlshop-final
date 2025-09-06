@@ -1,1 +1,233 @@
-\nimport \'package:cloud_firestore/cloud_firestore.dart\';\nimport \'package:flutter/material.dart\';\nimport \'package:myapp/constants.dart\';\n\nclass AddEditProductScreen extends StatefulWidget {\n  final String? documentId;\n\n  const AddEditProductScreen({super.key, this.documentId});\n\n  @override\n  State<AddEditProductScreen> createState() => _AddEditProductScreenState();\n}\n\nclass _AddEditProductScreenState extends State<AddEditProductScreen> {\n  final _formKey = GlobalKey<FormState>();\n  final _nameController = TextEditingController();\n  final _descriptionController = TextEditingController();\n  final _priceController = TextEditingController();\n  final _imageUrlController = TextEditingController();\n\n  String? _selectedCategory;\n  List<DocumentSnapshot> _categories = [];\n\n  bool _isLoading = false;\n  bool _isEditing = false;\n\n  @override\n  void initState() {\n    super.initState();\n    _isEditing = widget.documentId != null;\n    _fetchCategories();\n    if (_isEditing) {\n      _fetchProductDetails();\n    }\n  }\n\n  Future<void> _fetchCategories() async {\n    try {\n      final snapshot = await FirebaseFirestore.instance.collection(CATEGORIES_COLLECTION_PATH).get();\n      if (mounted) {\n        setState(() {\n          _categories = snapshot.docs;\n        });\n      }\n    } catch (e) {\n      ScaffoldMessenger.of(context).showSnackBar(\n        SnackBar(content: Text(\'Error fetching categories: $e\')),\n      );\n    }\n  }\n\n  Future<void> _fetchProductDetails() async {\n    try {\n      final doc = await FirebaseFirestore.instance.collection(PRODUCTS_COLLECTION_PATH).doc(widget.documentId).get();\n      final data = doc.data() as Map<String, dynamic>;\n\n      _nameController.text = data[\'name\'] ?? \'\';\n      _descriptionController.text = data[\'description\'] ?? \'\';\n      _priceController.text = (data[\'price\'] ?? 0).toString();\n      _imageUrlController.text = data[\'imageUrl\'] ?? \'\';\n      if (mounted) {\n        setState(() {\n          _selectedCategory = data[\'categoryId\'];\n        });\n      }\n    } catch (e) {\n      ScaffoldMessenger.of(context).showSnackBar(\n        SnackBar(content: Text(\'Error fetching product details: $e\')),\n      );\n    }\n  }\n\n  Future<void> _saveProduct() async {\n    if (!_formKey.currentState!.validate()) {\n      return;\n    }\n\n    setState(() {\n      _isLoading = true;\n    });\n\n    try {\n      final productData = {\n        \'name\': _nameController.text.trim(),\n        \'description\': _descriptionController.text.trim(),\n        \'price\': double.tryParse(_priceController.text.trim()) ?? 0.0,\n        \'imageUrl\': _imageUrlController.text.trim(),\n        \'categoryId\': _selectedCategory,\n        \'updatedAt\': FieldValue.serverTimestamp(),\n      };\n\n      if (_isEditing) {\n        await FirebaseFirestore.instance\n            .collection(PRODUCTS_COLLECTION_PATH)\n            .doc(widget.documentId)\n            .update(productData);\n      } else {\n        productData[\'createdAt\'] = FieldValue.serverTimestamp();\n        await FirebaseFirestore.instance.collection(PRODUCTS_COLLECTION_PATH).add(productData);\n      }\n\n      if (!mounted) return;\n      Navigator.of(context).pop();\n\n    } catch (e) {\n      ScaffoldMessenger.of(context).showSnackBar(\n        SnackBar(content: Text(\'Failed to save product: $e\')),\n      );\n    } finally {\n      if (mounted) {\n        setState(() {\n          _isLoading = false;\n        });\n      }\n    }\n  }\n\n  @override\n  Widget build(BuildContext context) {\n    return Scaffold(\n      appBar: AppBar(\n        title: Text(_isEditing ? \'Edit Product\' : \'Add Product\'),\n      ),\n      body: _isLoading\n          ? const Center(child: CircularProgressIndicator())\n          : SingleChildScrollView(\n              padding: const EdgeInsets.all(16.0),\n              child: Form(\n                key: _formKey,\n                child: Column(\n                  crossAxisAlignment: CrossAxisAlignment.stretch,\n                  children: [\n                    TextFormField(\n                      controller: _nameController,\n                      decoration: const InputDecoration(labelText: \'Product Name\'),\n                      validator: (value) => value!.isEmpty ? \'Please enter a name\' : null,\n                    ),\n                    const SizedBox(height: 16),\n                    TextFormField(\n                      controller: _descriptionController,\n                      decoration: const InputDecoration(labelText: \'Description\'),\n                      maxLines: 3,\n                    ),\n                    const SizedBox(height: 16),\n                    TextFormField(\n                      controller: _priceController,\n                      decoration: const InputDecoration(labelText: \'Price\'),\n                      keyboardType: const TextInputType.numberWithOptions(decimal: true),\n                      validator: (value) => value!.isEmpty ? \'Please enter a price\' : null,\n                    ),\n                    const SizedBox(height: 16),\n                    TextFormField(\n                      controller: _imageUrlController,\n                      decoration: const InputDecoration(labelText: \'Image URL\'),\n                    ),\n                    const SizedBox(height: 16),\n                    DropdownButtonFormField<String>(\n                      value: _selectedCategory,\n                      decoration: const InputDecoration(labelText: \'Category\'),\n                      items: _categories.map((doc) {\n                        return DropdownMenuItem<String>(\n                          value: doc.id,\n                          child: Text((doc.data() as Map<String, dynamic>)[\'name\'] ?? \'\'),\n                        );\n                      }).toList(),\n                      onChanged: (value) {\n                        setState(() {\n                          _selectedCategory = value;\n                        });\n                      },\n                      validator: (value) => value == null ? \'Please select a category\' : null,\n                    ),\n                    const SizedBox(height: 32),\n                    ElevatedButton(\n                      onPressed: _saveProduct,\n                      child: const Text(\'Save Product\'),\n                    ),\n                  ],\n                ),\n              ),\n            ),\n    );\n  }\n}\n
+
+import 'dart:io';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:myapp/constants.dart';
+
+class AddEditProductScreen extends StatefulWidget {
+  final String? documentId;
+
+  const AddEditProductScreen({super.key, this.documentId});
+
+  @override
+  State<AddEditProductScreen> createState() => _AddEditProductScreenState();
+}
+
+class _AddEditProductScreenState extends State<AddEditProductScreen> {
+  final _formKey = GlobalKey<FormState>();
+  final _nameController = TextEditingController();
+  final _priceController = TextEditingController();
+  final _quantityController = TextEditingController();
+  String? _selectedCategory;
+  String? _selectedTownship;
+  String? _imageUrl;
+  File? _imageFile;
+  bool _isLoading = false;
+
+  List<String> _categories = [];
+  List<String> _townships = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchInitialData();
+  }
+
+  Future<void> _fetchInitialData() async {
+    await _fetchCategories();
+    await _fetchTownships();
+    if (widget.documentId != null) {
+      _loadProductData();
+    }
+  }
+
+  Future<void> _fetchCategories() async {
+    try {
+      final snapshot = await FirebaseFirestore.instance.collection(categoriesCollectionPath).get();
+      setState(() {
+        _categories = snapshot.docs.map((doc) => doc['name'] as String).toList();
+      });
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to fetch categories: $e')));
+    }
+  }
+
+  Future<void> _fetchTownships() async {
+    try {
+      final snapshot = await FirebaseFirestore.instance.collection(townshipsCollectionPath).get();
+      setState(() {
+        _townships = snapshot.docs.map((doc) => doc['name'] as String).toList();
+      });
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to fetch townships: $e')));
+    }
+  }
+
+  Future<void> _loadProductData() async {
+    try {
+      final doc = await FirebaseFirestore.instance.collection(productsCollectionPath).doc(widget.documentId).get();
+      if (doc.exists) {
+        final data = doc.data()!;
+        _nameController.text = data['name'] ?? '';
+        _priceController.text = (data['price'] ?? 0).toString();
+        _quantityController.text = (data['quantity'] ?? 0).toString();
+        _imageUrl = data['imageUrl'];
+        _selectedCategory = data['category'];
+        _selectedTownship = data['township'];
+        setState(() {});
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to load product data: $e')));
+    }
+  }
+
+  Future<void> _pickImage() async {
+    final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      setState(() {
+        _imageFile = File(pickedFile.path);
+      });
+    }
+  }
+
+  Future<String?> _uploadImage(File image) async {
+    try {
+      final ref = FirebaseStorage.instance
+          .ref()
+          .child('product_images')
+          .child('${DateTime.now().toIso8601String()}.jpg');
+      await ref.putFile(image);
+      return await ref.getDownloadURL();
+    } catch (e) {
+      if (!mounted) return null;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to upload image: $e')));
+      return null;
+    }
+  }
+
+  Future<void> _saveProduct() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    String? newImageUrl = _imageUrl;
+    if (_imageFile != null) {
+      newImageUrl = await _uploadImage(_imageFile!);
+      if (newImageUrl == null) {
+        setState(() {
+          _isLoading = false;
+        });
+        return; // Stop if image upload failed
+      }
+    }
+
+    final productData = {
+      'name': _nameController.text,
+      'price': double.tryParse(_priceController.text) ?? 0.0,
+      'quantity': int.tryParse(_quantityController.text) ?? 0,
+      'category': _selectedCategory,
+      'township': _selectedTownship,
+      'imageUrl': newImageUrl,
+    };
+
+    try {
+      if (widget.documentId != null) {
+        await FirebaseFirestore.instance.collection(productsCollectionPath).doc(widget.documentId).update(productData);
+      } else {
+        await FirebaseFirestore.instance.collection(productsCollectionPath).add(productData);
+      }
+      if (!mounted) return;
+      Navigator.of(context).pop();
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to save product: $e')));
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.documentId == null ? 'Add Product' : 'Edit Product'),
+      ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
+              padding: const EdgeInsets.all(16.0),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    TextFormField(
+                      controller: _nameController,
+                      decoration: const InputDecoration(labelText: 'Product Name'),
+                      validator: (value) => value!.isEmpty ? 'Please enter a name' : null,
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _priceController,
+                      decoration: const InputDecoration(labelText: 'Price'),
+                      keyboardType: TextInputType.number,
+                      validator: (value) => value!.isEmpty ? 'Please enter a price' : null,
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _quantityController,
+                      decoration: const InputDecoration(labelText: 'Quantity'),
+                      keyboardType: TextInputType.number,
+                      validator: (value) => value!.isEmpty ? 'Please enter quantity' : null,
+                    ),
+                    const SizedBox(height: 16),
+                    DropdownButtonFormField<String>(
+                      initialValue: _selectedCategory,
+                      hint: const Text('Select Category'),
+                      items: _categories.map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
+                      onChanged: (value) => setState(() => _selectedCategory = value),
+                      validator: (value) => value == null ? 'Please select a category' : null,
+                    ),
+                    const SizedBox(height: 16),
+                    DropdownButtonFormField<String>(
+                      initialValue: _selectedTownship,
+                      hint: const Text('Select Township'),
+                      items: _townships.map((t) => DropdownMenuItem(value: t, child: Text(t))).toList(),
+                      onChanged: (value) => setState(() => _selectedTownship = value),
+                      validator: (value) => value == null ? 'Please select a township' : null,
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        _imageFile != null
+                            ? Image.file(_imageFile!, width: 100, height: 100, fit: BoxFit.cover)
+                            : (_imageUrl != null
+                                ? Image.network(_imageUrl!, width: 100, height: 100, fit: BoxFit.cover)
+                                : const Icon(Icons.image, size: 100)),
+                        const SizedBox(width: 16),
+                        ElevatedButton(onPressed: _pickImage, child: const Text('Pick Image')),
+                      ],
+                    ),
+                    const SizedBox(height: 32),
+                    ElevatedButton(
+                      onPressed: _saveProduct,
+                      child: const Text('Save Product'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+    );
+  }
+}

@@ -2,12 +2,13 @@
 const String appId = "1:405459867937:web:649bd2384a6ec739420660";
 
 // COLLECTIONS
-const String PRODUCTS_COLLECTION_PATH = 'artifacts/$appId/public/data/products';
-const String CATEGORIES_COLLECTION_PATH = 'artifacts/$appId/public/data/categories';
-const String TOWNSHIPS_COLLECTION_PATH = 'artifacts/$appId/public/data/townships';
-const String ANNOUNCEMENTS_COLLECTION_PATH = 'artifacts/$appId/public/data/announcements';
-const String USERS_COLLECTION_PATH = 'artifacts/$appId/public/data/users';
+const String productsCollectionPath = 'artifacts/$appId/public/data/products';
+const String categoriesCollectionPath = 'artifacts/$appId/public/data/categories';
+const String townshipsCollectionPath = 'artifacts/$appId/public/data/townships';
+const String announcementsCollectionPath = 'artifacts/$appId/public/data/announcements';
+const String usersCollectionPath = 'artifacts/$appId/public/data/users';
+const String ordersCollectionPath = 'artifacts/$appId/public/data/orders';
 
 // SETTINGS: single doc to hold shop name, logo and splash
-const String SETTINGS_COLLECTION_PATH = 'artifacts/$appId/public/data/settings';
-const String SETTINGS_DOC_ID = 'meta';
+const String settingsCollectionPath = 'artifacts/$appId/public/data/settings';
+const String settingsDocId = 'meta';

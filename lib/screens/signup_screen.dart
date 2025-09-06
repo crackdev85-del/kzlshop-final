@@ -1,4 +1,5 @@
 
+import 'dart:developer' as developer;
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -36,15 +37,19 @@ class _SignupScreenState extends State<SignupScreen> {
 
   Future<void> _fetchTownships() async {
     try {
-      final snapshot = await _firestore.collection(TOWNSHIPS_COLLECTION_PATH).get();
+      final snapshot = await _firestore.collection(townshipsCollectionPath).get();
       if (mounted) {
         setState(() {
           _townships = snapshot.docs;
         });
       }
-    } catch (e) {
-      // Handle error, maybe show a snackbar
-      print("Error fetching townships: $e");
+    } catch (e, s) {
+      developer.log(
+        'Error fetching townships',
+        name: 'myapp.signup',
+        error: e,
+        stackTrace: s,
+      );
     }
   }
 
@@ -108,7 +113,7 @@ class _SignupScreenState extends State<SignupScreen> {
       await userCredential.user?.updateDisplayName(_usernameController.text.trim());
 
       // Create a document for the user in Firestore
-      await _firestore.collection(USERS_COLLECTION_PATH).doc(userCredential.user!.uid).set({
+      await _firestore.collection(usersCollectionPath).doc(userCredential.user!.uid).set({
         'email': userCredential.user!.email,
         'username': _usernameController.text.trim(),
         'displayName': _usernameController.text.trim(),
@@ -184,7 +189,7 @@ class _SignupScreenState extends State<SignupScreen> {
                   
                   // Township Dropdown
                   DropdownButtonFormField<String>(
-                    value: _selectedTownship,
+                    initialValue: _selectedTownship,
                     decoration: const InputDecoration(
                       labelText: 'မြို့နယ်ရွေးရန်',
                       border: OutlineInputBorder(),

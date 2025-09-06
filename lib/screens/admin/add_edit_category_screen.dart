@@ -1,1 +1,117 @@
-\nimport \'package:cloud_firestore/cloud_firestore.dart\';\nimport \'package:flutter/material.dart\';\nimport \'package:myapp/constants.dart\';\n\nclass AddEditCategoryScreen extends StatefulWidget {\n  final String? documentId;\n\n  const AddEditCategoryScreen({super.key, this.documentId});\n\n  @override\n  State<AddEditCategoryScreen> createState() => _AddEditCategoryScreenState();\n}\n\nclass _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {\n  final _formKey = GlobalKey<FormState>();\n  final _nameController = TextEditingController();\n\n  bool _isLoading = false;\n  bool _isEditing = false;\n\n  @override\n  void initState() {\n    super.initState();\n    _isEditing = widget.documentId != null;\n    if (_isEditing) {\n      _fetchCategoryDetails();\n    }\n  }\n\n  Future<void> _fetchCategoryDetails() async {\n    try {\n      final doc = await FirebaseFirestore.instance.collection(CATEGORIES_COLLECTION_PATH).doc(widget.documentId).get();\n      final data = doc.data() as Map<String, dynamic>;\n      _nameController.text = data[\'name\'] ?? \'\';\n    } catch (e) {\n      ScaffoldMessenger.of(context).showSnackBar(\n        SnackBar(content: Text(\'Error fetching category details: $e\')),\n      );\n    }\n  }\n\n  Future<void> _saveCategory() async {\n    if (!_formKey.currentState!.validate()) {\n      return;\n    }\n\n    setState(() {\n      _isLoading = true;\n    });\n\n    try {\n      final categoryData = {\n        \'name\': _nameController.text.trim(),\n        \'updatedAt\': FieldValue.serverTimestamp(),\n      };\n\n      if (_isEditing) {\n        await FirebaseFirestore.instance\n            .collection(CATEGORIES_COLLECTION_PATH)\n            .doc(widget.documentId)\n            .update(categoryData);\n      } else {\n        categoryData[\'createdAt\'] = FieldValue.serverTimestamp();\n        await FirebaseFirestore.instance.collection(CATEGORIES_COLLECTION_PATH).add(categoryData);\n      }\n\n      if (!mounted) return;\n      Navigator.of(context).pop();\n\n    } catch (e) {\n      ScaffoldMessenger.of(context).showSnackBar(\n        SnackBar(content: Text(\'Failed to save category: $e\')),\n      );\n    } finally {\n      if (mounted) {\n        setState(() {\n          _isLoading = false;\n        });\n      }\n    }\n  }\n\n  @override\n  Widget build(BuildContext context) {\n    return Scaffold(\n      appBar: AppBar(\n        title: Text(_isEditing ? \'Edit Category\' : \'Add Category\'),\n      ),\n      body: _isLoading\n          ? const Center(child: CircularProgressIndicator())\n          : Padding(\n              padding: const EdgeInsets.all(16.0),\n              child: Form(\n                key: _formKey,\n                child: Column(\n                  crossAxisAlignment: CrossAxisAlignment.stretch,\n                  children: [\n                    TextFormField(\n                      controller: _nameController,\n                      decoration: const InputDecoration(labelText: \'Category Name\'),\n                      validator: (value) => value!.isEmpty ? \'Please enter a name\' : null,\n                    ),\n                    const SizedBox(height: 32),\n                    ElevatedButton(\n                      onPressed: _saveCategory,\n                      child: const Text(\'Save Category\'),\n                    ),\n                  ],\n                ),\n              ),\n            ),\n    );\n  }\n}\n
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
+import 'package:myapp/constants.dart';
+
+class AddEditCategoryScreen extends StatefulWidget {
+  final String? documentId;
+
+  const AddEditCategoryScreen({super.key, this.documentId});
+
+  @override
+  State<AddEditCategoryScreen> createState() => _AddEditCategoryScreenState();
+}
+
+class _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {
+  final _formKey = GlobalKey<FormState>();
+  final _nameController = TextEditingController();
+
+  bool _isLoading = false;
+  bool _isEditing = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _isEditing = widget.documentId != null;
+    if (_isEditing) {
+      _fetchCategoryDetails();
+    }
+  }
+
+  Future<void> _fetchCategoryDetails() async {
+    try {
+      final doc = await FirebaseFirestore.instance.collection(categoriesCollectionPath).doc(widget.documentId).get();
+      final data = doc.data() as Map<String, dynamic>;
+      _nameController.text = data['name'] ?? '';
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error fetching category details: $e')),
+      );
+    }
+  }
+
+  Future<void> _saveCategory() async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final categoryData = {
+        'name': _nameController.text.trim(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      };
+
+      if (_isEditing) {
+        await FirebaseFirestore.instance
+            .collection(categoriesCollectionPath)
+            .doc(widget.documentId)
+            .update(categoryData);
+      } else {
+        categoryData['createdAt'] = FieldValue.serverTimestamp();
+        await FirebaseFirestore.instance.collection(categoriesCollectionPath).add(categoryData);
+      }
+
+      if (!mounted) return;
+      Navigator.of(context).pop();
+
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to save category: $e')),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(_isEditing ? 'Edit Category' : 'Add Category'),
+      ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    TextFormField(
+                      controller: _nameController,
+                      decoration: const InputDecoration(labelText: 'Category Name'),
+                      validator: (value) => value!.isEmpty ? 'Please enter a name' : null,
+                    ),
+                    const SizedBox(height: 32),
+                    ElevatedButton(
+                      onPressed: _saveCategory,
+                      child: const Text('Save Category'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+    );
+  }
+}

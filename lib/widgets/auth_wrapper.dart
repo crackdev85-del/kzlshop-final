@@ -1,1 +1,88 @@
-\nimport \'package:cloud_firestore/cloud_firestore.dart\';\nimport \'package:firebase_auth/firebase_auth.dart\';\nimport \'package:flutter/material.dart\';\nimport \'package:myapp/constants.dart\';\nimport \'package:myapp/screens/admin_screen.dart\';\nimport \'package:myapp/screens/home_screen.dart\';\nimport \'package:myapp/screens/login_screen.dart\';\n\nclass AuthWrapper extends StatelessWidget {\n  const AuthWrapper({super.key});\n\n  @override\n  Widget build(BuildContext context) {\n    return StreamBuilder<User?>(\n      stream: FirebaseAuth.instance.authStateChanges(),\n      builder: (context, snapshot) {\n        // User is not logged in\n        if (!snapshot.hasData || snapshot.data == null) {\n          return const LoginScreen();\n        }\n\n        // User is logged in, check their role\n        return RoleBasedWrapper(userId: snapshot.data!.uid);\n      },\n    );\n  }\n}\n\nclass RoleBasedWrapper extends StatelessWidget {\n  final String userId;\n\n  const RoleBasedWrapper({super.key, required this.userId});\n\n  @override\n  Widget build(BuildContext context) {\n    return StreamBuilder<DocumentSnapshot>(\n      stream: FirebaseFirestore.instance.collection(USERS_COLLECTION_PATH).doc(userId).snapshots(),\n      builder: (context, snapshot) {\n        // Loading or error state\n        if (snapshot.connectionState == ConnectionState.waiting) {\n          return const Scaffold(body: Center(child: CircularProgressIndicator()));\n        }\n        if (snapshot.hasError) {\n          return const Scaffold(body: Center(child: Text(\'Something went wrong.\')));\n        }\n        if (!snapshot.hasData || !snapshot.data!.exists) {\n          // This case might happen if the user record is not created yet.\n          // Or if there are permission issues.\n          return const LoginScreen(); // Fallback to login\n        }\n\n        // Check user role\n        final userData = snapshot.data!.data() as Map<String, dynamic>;\n        final String role = userData[\'role\'] ?? \'user\';\n\n        if (role == \'admin\') {\n          return const AdminScreen();\n        } else {\n          return const HomeScreen();\n        }\n      },\n    );\n  }\n}\n
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+import 'package:myapp/constants.dart';
+import 'package:myapp/screens/admin_screen.dart';
+import 'package:myapp/screens/create_admin_screen.dart';
+import 'package:myapp/screens/home_screen.dart';
+
+class AuthWrapper extends StatelessWidget {
+  const AuthWrapper({super.key});
+
+  Future<bool> _isAdminUser(User user) async {
+    final userDoc = await FirebaseFirestore.instance
+        .collection(usersCollectionPath)
+        .doc(user.uid)
+        .get();
+    if (userDoc.exists && userDoc.data()!['role'] == 'admin') {
+      return true;
+    }
+    return false;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<User?>(
+      stream: FirebaseAuth.instance.authStateChanges(),
+      builder: (context, userSnapshot) {
+        if (userSnapshot.connectionState == ConnectionState.waiting) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        if (userSnapshot.hasData && userSnapshot.data != null) {
+          // User is logged in, check if admin
+          return FutureBuilder<bool>(
+            future: _isAdminUser(userSnapshot.data!),
+            builder: (context, isAdminSnapshot) {
+              if (isAdminSnapshot.connectionState == ConnectionState.waiting) {
+                return const Scaffold(
+                  body: Center(child: CircularProgressIndicator()),
+                );
+              }
+              if (isAdminSnapshot.hasData && isAdminSnapshot.data == true) {
+                return const AdminScreen();
+              } else {
+                return const HomeScreen();
+              }
+            },
+          );
+        } else {
+          // User is not logged in, check if an admin account exists
+          return FutureBuilder<QuerySnapshot>(
+            future: FirebaseFirestore.instance
+                .collection(usersCollectionPath)
+                .where('role', isEqualTo: 'admin')
+                .limit(1)
+                .get(),
+            builder: (context, adminSnapshot) {
+              if (adminSnapshot.connectionState == ConnectionState.waiting) {
+                return const Scaffold(
+                  body: Center(child: CircularProgressIndicator()),
+                );
+              }
+
+              if (adminSnapshot.hasError) {
+                return Scaffold(
+                  body: Center(child: Text('Error: ${adminSnapshot.error}')),
+                );
+              }
+
+              final bool hasAdmin = adminSnapshot.hasData && adminSnapshot.data!.docs.isNotEmpty;
+
+              if (hasAdmin) {
+                // If admin exists, show login screen
+                return const HomeScreen(); // Or your preferred login screen
+              } else {
+                // If no admin exists, show create admin screen
+                return const CreateAdminScreen();
+              }
+            },
+          );
+        }
+      },
+    );
+  }
+}

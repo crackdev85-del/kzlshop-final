@@ -1,4 +1,23 @@
-\nimport \'package:cloud_firestore/cloud_firestore.dart\';\nimport \'package:flutter/material.dart\';\nimport \'package:myapp/constants.dart\';\n\nclass UserDetailScreen extends StatefulWidget {\n  final String userId;\n\n  const UserDetailScreen({super.key, required this.userId});\n\n  @override\n  State<UserDetailScreen> createState() => _UserDetailScreenState();\n}\n\nclass _UserDetailScreenState extends State<UserDetailScreen> {\n  DocumentSnapshot? _user;\n  bool _isLoading = true;\n  String? _selectedRole;\n\n  final List<String> _roles = [\'user\', \'admin\'];\n\n  @override\n  void initState() {\n    super.initState();\n    _fetchUserDetails();\n  }\n\n  Future<void> _fetchUserDetails() async {\n    try {\n      final doc = await FirebaseFirestore.instance.collection(USERS_COLLECTION_PATH).doc(widget.userId).get();\n      if (mounted) {\n        setState(() {\n          _user = doc;\n          _selectedRole = (doc.data() as Map<String, dynamic>)[\'role\'] ?? \'user\';\n          _isLoading = false;\n        });\n      }\n    } catch (e) {\n      ScaffoldMessenger.of(context).showSnackBar(\n        SnackBar(content: Text(\'Error fetching user details: $e\')),\n      );\n      setState(() {\n        _isLoading = false;\n      });\n    }\n  }\n\n  Future<void> _updateRole() async {\n    if (_selectedRole == null) return;\n\n    try {\n      await FirebaseFirestore.instance.collection(USERS_COLLECTION_PATH).doc(widget.userId).update({\n        \'role\': _selectedRole,\n      });\n      ScaffoldMessenger.of(context).showSnackBar(\n        const SnackBar(content: Text(\'User role updated successfully!\')),
-      );\n      Navigator.of(context).pop();\n    } catch (e) {\n      ScaffoldMessenger.of(context).showSnackBar(\n        SnackBar(content: Text(\'Failed to update role: $e\')),\n      );\n    }\n  }\n\n  @override\n  Widget build(BuildContext context) {\n    if (_isLoading) {\n      return Scaffold(\n        appBar: AppBar(title: const Text(\'User Details\')),\n        body: const Center(child: CircularProgressIndicator()),\n      );\n    }\n\n    if (_user == null) {\n      return Scaffold(\n        appBar: AppBar(title: const Text(\'User Details\')),\n        body: const Center(child: Text(\'User not found!\')),\n      );\n    }\n\n    final userData = _user!.data() as Map<String, dynamic>;\n\n    return Scaffold(\n      appBar: AppBar(\n        title: const Text(\'User Details\'),\n      ),\n      body: Padding(\n        padding: const EdgeInsets.all(16.0),\n        child: Column(\n          crossAxisAlignment: CrossAxisAlignment.start,\n          children: [\n            Text(\'User ID: ${widget.userId}\', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),\n            const SizedBox(height: 10),\n            Text(\'Name: ${userData[\'name\'] ?? \'N/A\'}\'),\n            Text(\'Email: ${userData[\'email\'] ?? \'N/A\'}\'),\n            const Divider(height: 30),\n\n            const Text(\'Update Role:\', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),\n            const SizedBox(height: 10),\n            DropdownButtonFormField<String>(\n              value: _selectedRole,\n              decoration: const InputDecoration(border: OutlineInputBorder()),\n              items: _roles.map((role) {\n                return DropdownMenuItem<String>(\n                  value: role,\n                  child: Text(role),\n                );\n              }).toList(),\n              onChanged: (value) {\n                setState(() {\n                  _selectedRole = value;\n                });\n              },\n            ),\n            const SizedBox(height: 20),\n            ElevatedButton(\n              onPressed: _updateRole,\n              child: const Text(\'Save Role\'),\n              style: ElevatedButton.styleFrom(minimumSize: const Size(double.infinity, 50)),\n            ),\n          ],\n        ),\n      ),\n    );\n  }\n}\n
 
-      
+import 'package:flutter/material.dart';
+
+class UserDetailScreen extends StatelessWidget {
+  final String userId;
+
+  const UserDetailScreen({super.key, required this.userId});
+
+  @override
+  Widget build(BuildContext context) {
+    // TODO: Fetch user details from Firestore based on userId
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('User Details'),
+      ),
+      body: const Center(
+        child: Text('Details for user will be here.'),
+        // TODO: Display user information like name, email, order history, etc.
+      ),
+    );
+  }
+}

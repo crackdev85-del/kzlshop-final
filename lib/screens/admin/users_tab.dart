@@ -1,1 +1,13 @@
-\nimport \'package:cloud_firestore/cloud_firestore.dart\';\nimport \'package:flutter/material.dart\';\nimport \'package:myapp/constants.dart\';\nimport \'package:myapp/screens/admin/user_detail_screen.dart\';\n\nclass UsersTab extends StatelessWidget {\n  const UsersTab({super.key});\n\n  @override\n  Widget build(BuildContext context) {\n    return Scaffold(\n      body: StreamBuilder<QuerySnapshot>(\n        stream: FirebaseFirestore.instance.collection(USERS_COLLECTION_PATH).snapshots(),\n        builder: (context, snapshot) {\n          if (snapshot.hasError) {\n            return const Center(child: Text(\'Something went wrong\'));\n          }\n\n          if (snapshot.connectionState == ConnectionState.waiting) {\n            return const Center(child: CircularProgressIndicator());\n          }\n\n          if (snapshot.data!.docs.isEmpty) {\n            return const Center(child: Text(\'No users found.\'));\n          }\n\n          return ListView.builder(\n            itemCount: snapshot.data!.docs.length,\n            itemBuilder: (context, index) {\n              final doc = snapshot.data!.docs[index];\n              final user = doc.data() as Map<String, dynamic>;\n\n              return Card(\n                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),\n                child: ListTile(\n                  onTap: () {\n                    Navigator.of(context).push(\n                      MaterialPageRoute(\n                        builder: (context) => UserDetailScreen(userId: doc.id),\n                      ),\n                    );\n                  },\n                  title: Text(user[\'name\'] ?? \'No Name\', style: const TextStyle(fontWeight: FontWeight.bold)),\n                  subtitle: Text(user[\'email\'] ?? \'No Email\'),\n                  trailing: const Icon(Icons.arrow_forward_ios),\n                ),\n              );\n            },          );\n        },      ),\n    );\n  }\n}\n
+
+import 'package:flutter/material.dart';
+
+class UsersTab extends StatelessWidget {
+  const UsersTab({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const Center(
+      child: Text('Users Tab'),
+    );
+  }
+}

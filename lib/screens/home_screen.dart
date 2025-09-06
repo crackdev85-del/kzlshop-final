@@ -47,7 +47,7 @@ class HomeScreen extends StatelessWidget {
         ],
       ),
       body: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance.collection(PRODUCTS_COLLECTION_PATH).snapshots(),
+        stream: FirebaseFirestore.instance.collection(productsCollectionPath).snapshots(),
         builder: (context, snapshot) {
           if (snapshot.hasError) {
             return Center(child: Text('Something went wrong', style: theme.textTheme.bodyMedium));
