@@ -10,8 +10,20 @@ class ProductsTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const AddEditProductScreen(),
+            ),
+          );
+        },
+        tooltip: 'Add Product',
+        child: const Icon(Icons.add),
+      ),
       body: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance.collection(productsCollectionPath).snapshots(),
+        stream: FirebaseFirestore.instance.collection(productsCollectionPath).orderBy('name').snapshots(),
         builder: (context, snapshot) {
           if (snapshot.hasError) {
             return const Center(child: Text('Something went wrong'));
@@ -28,65 +40,73 @@ class ProductsTab extends StatelessWidget {
           return ListView.builder(
             itemCount: snapshot.data!.docs.length,
             itemBuilder: (context, index) {
-              final doc = snapshot.data!.docs[index];
-              final product = doc.data() as Map<String, dynamic>;
-              final imageUrl = product['imageUrl'];
+              final productDoc = snapshot.data!.docs[index];
+              final productData = productDoc.data() as Map<String, dynamic>;
+
+              final String name = productData['name'] ?? 'No Name';
+              final String imageUrl = productData['imageUrl'] ?? '';
+              final double price = (productData['price'] ?? 0.0).toDouble();
 
               return Card(
                 margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 child: ListTile(
-                  leading: SizedBox(
-                    width: 50,
-                    height: 50,
-                    child: (imageUrl != null && imageUrl.isNotEmpty)
-                        ? Image.network(
-                            imageUrl,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) {
-                              return const Icon(Icons.broken_image, size: 50);
-                            },
-                          )
-                        : const Icon(Icons.image_not_supported, size: 50),
-                  ),
-                  title: Text(product['name'] ?? 'No Name'),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Quantity: ${product['quantity'] ?? 0}'),
-                      Text('Category: ${product['category'] ?? 'N/A'}'),
-                      Text('Township: ${product['township'] ?? 'N/A'}'),
-                    ],
-                  ),
+                  leading: imageUrl.isNotEmpty
+                      ? Image.network(
+                          imageUrl,
+                          width: 50,
+                          height: 50,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return const Icon(Icons.broken_image, size: 50);
+                          },
+                        )
+                      : const Icon(Icons.image, size: 50),
+                  title: Text(name),
+                  subtitle: Text('Price: \$${price.toStringAsFixed(2)}'),
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       IconButton(
-                        icon: const Icon(Icons.edit, color: Colors.blue),
+                        icon: const Icon(Icons.edit),
                         onPressed: () {
-                          Navigator.of(context).push(
+                          Navigator.push(
+                            context,
                             MaterialPageRoute(
-                              builder: (context) => AddEditProductScreen(documentId: doc.id),
+                              builder: (context) => AddEditProductScreen(
+                                productId: productDoc.id,
+                              ),
                             ),
                           );
                         },
                       ),
                       IconButton(
                         icon: const Icon(Icons.delete, color: Colors.red),
-                        onPressed: () async {
-                          final confirm = await showDialog(
+                        onPressed: () {
+                          showDialog(
                             context: context,
-                            builder: (context) => AlertDialog(
-                              title: const Text('Are you sure?'),
-                              content: const Text('Do you want to delete this product?'),
-                              actions: [
-                                TextButton(onPressed: () => Navigator.of(context).pop(false), child: const Text('No')),
-                                TextButton(onPressed: () => Navigator.of(context).pop(true), child: const Text('Yes')),
-                              ],
-                            ),
+                            builder: (BuildContext ctx) {
+                              return AlertDialog(
+                                title: const Text('Confirm Delete'),
+                                content: Text('Are you sure you want to delete "$name"?'),
+                                actions: <Widget>[
+                                  TextButton(
+                                    onPressed: () => Navigator.of(ctx).pop(),
+                                    child: const Text('Cancel'),
+                                  ),
+                                  TextButton(
+                                    onPressed: () {
+                                      FirebaseFirestore.instance
+                                          .collection(productsCollectionPath)
+                                          .doc(productDoc.id)
+                                          .delete();
+                                      Navigator.of(ctx).pop();
+                                    },
+                                    child: const Text('Delete', style: TextStyle(color: Colors.red)),
+                                  ),
+                                ],
+                              );
+                            },
                           );
-                          if (confirm == true) {
-                            await FirebaseFirestore.instance.collection(productsCollectionPath).doc(doc.id).delete();
-                          }
                         },
                       ),
                     ],
@@ -96,17 +116,6 @@ class ProductsTab extends StatelessWidget {
             },
           );
         },
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => const AddEditProductScreen(),
-            ),
-          );
-        },
-        tooltip: 'Add Product',
-        child: const Icon(Icons.add),
       ),
     );
   }

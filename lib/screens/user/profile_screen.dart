@@ -3,7 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:myapp/main.dart';
-import 'package:myapp/screens/admin_screen.dart';
+import 'package:myapp/screens/admin/admin_home_screen.dart';
 import 'package:provider/provider.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -94,7 +94,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const AdminScreen()),
+                  MaterialPageRoute(builder: (context) => const AdminHomeScreen()),
                 );
               },
               icon: const Icon(Icons.admin_panel_settings),

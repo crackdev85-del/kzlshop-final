@@ -1,5 +1,5 @@
 
-const String appId = "1:405459867937:web:649bd2384a6ec739420660";
+const String appId = "default-app-id";
 
 // COLLECTIONS
 const String productsCollectionPath = 'artifacts/$appId/public/data/products';

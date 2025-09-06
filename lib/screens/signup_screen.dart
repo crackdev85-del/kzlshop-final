@@ -16,6 +16,7 @@ class SignupScreen extends StatefulWidget {
 class _SignupScreenState extends State<SignupScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
   final _usernameController = TextEditingController();
   final _shopNameController = TextEditingController();
   final _phoneController = TextEditingController();
@@ -75,6 +76,10 @@ class _SignupScreenState extends State<SignupScreen> {
       _showError('Password သည် အနည်းဆုံး 6 အက္ခရာ ဖြစ်ရမည်။');
       return;
     }
+    if (_passwordController.text.trim() != _confirmPasswordController.text.trim()) {
+      _showError('Passwords do not match');
+      return;
+    }
     if (_usernameController.text.trim().isEmpty) {
       _showError('Username ထည့်ရန်လိုအပ်သည် (required)');
       return;
@@ -93,10 +98,6 @@ class _SignupScreenState extends State<SignupScreen> {
     }
     if (_locationController.text.trim().isEmpty) {
       _showError('Location / Map address ထည့်ရန်လိုအပ်သည် (required)');
-      return;
-    }
-    if (_selectedTownship == null || _selectedTownship!.isEmpty) {
-      _showError('မြို့နယ် (Township) ကိုရွေးချယ်ပါ။');
       return;
     }
     
@@ -172,26 +173,28 @@ class _SignupScreenState extends State<SignupScreen> {
                   const SizedBox(height: 40),
                   
                   // Form Fields
+                  _buildTextField(controller: _usernameController, label: 'Username', icon: Icons.person),
+                  const SizedBox(height: 16.0),
                   _buildTextField(controller: _emailController, label: 'Email', icon: Icons.email, keyboardType: TextInputType.emailAddress),
                   const SizedBox(height: 16.0),
                   _buildTextField(controller: _passwordController, label: 'Password', icon: Icons.lock, obscureText: true),
                   const SizedBox(height: 16.0),
-                  _buildTextField(controller: _usernameController, label: 'Username', icon: Icons.person),
+                  _buildTextField(controller: _confirmPasswordController, label: 'Confirm Password', icon: Icons.lock, obscureText: true),
                   const SizedBox(height: 16.0),
                   _buildTextField(controller: _shopNameController, label: 'ဆိုင်အမည်', icon: Icons.store),
                   const SizedBox(height: 16.0),
                   _buildTextField(controller: _phoneController, label: 'ဖုန်းနံပါတ်', icon: Icons.phone, keyboardType: TextInputType.phone),
                   const SizedBox(height: 16.0),
-                  _buildTextField(controller: _addressController, label: 'လိပ်စာ', icon: Icons.location_on),
+                  _buildTextField(controller: _addressController, label: 'ဆိုင်လိပ်စာ', icon: Icons.location_on),
                   const SizedBox(height: 16.0),
                   _buildTextField(controller: _locationController, label: 'Location / Map address', icon: Icons.map),
                   const SizedBox(height: 16.0),
-                  
+
                   // Township Dropdown
                   DropdownButtonFormField<String>(
                     initialValue: _selectedTownship,
                     decoration: const InputDecoration(
-                      labelText: 'မြို့နယ်ရွေးရန်',
+                      labelText: 'မြို့နယ်ရွေးရန် (Optional)',
                       border: OutlineInputBorder(),
                       prefixIcon: Icon(Icons.location_city),
                     ),
@@ -208,7 +211,7 @@ class _SignupScreenState extends State<SignupScreen> {
                       });
                     },
                   ),
-
+                  
                   const SizedBox(height: 24),
                   _isLoading
                       ? const Center(child: CircularProgressIndicator())

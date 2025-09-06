@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 
 class ReportsTab extends StatelessWidget {
@@ -5,8 +6,21 @@ class ReportsTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Center(
-      child: Text('Reports Tab'),
+    // TODO: Implement a more sophisticated reporting UI
+    // For example, using charts to visualize sales data,
+    // filtering by date range, etc.
+    return const Scaffold(
+      body: Center(
+        child: Padding(
+          padding: EdgeInsets.all(16.0),
+          child: Text(
+            'Sales reports and other analytics will be displayed here. ' 
+            'This can include charts for monthly sales, top-selling products, and user statistics.',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 16),
+          ),
+        ),
+      ),
     );
   }
 }

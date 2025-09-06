@@ -1,34 +1,48 @@
 
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:myapp/screens/signup_screen.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:myapp/constants.dart';
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+class RegisterScreen extends StatefulWidget {
+  const RegisterScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  State<RegisterScreen> createState() => _RegisterScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _RegisterScreenState extends State<RegisterScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
 
-  Future<void> _login() async {
+  Future<void> _register() async {
     if (_formKey.currentState!.validate()) {
       setState(() {
         _isLoading = true;
       });
       try {
-        await FirebaseAuth.instance.signInWithEmailAndPassword(
-          email: _emailController.text,
-          password: _passwordController.text,
-        );
+        UserCredential userCredential = await FirebaseAuth.instance
+            .createUserWithEmailAndPassword(
+                email: _emailController.text,
+                password: _passwordController.text);
+
+        // Create a user document in Firestore
+        await FirebaseFirestore.instance
+            .collection(usersCollectionPath)
+            .doc(userCredential.user!.uid)
+            .set({
+          'email': _emailController.text,
+          'role': 'user', // Default role is 'user'
+        });
+
+        if (mounted) {
+          Navigator.of(context).pop();
+        }
       } on FirebaseAuthException catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.message ?? 'Login failed')),
+          SnackBar(content: Text(e.message ?? 'Registration failed')),
         );
       } finally {
         if (mounted) {
@@ -44,7 +58,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Login'),
+        title: const Text('Register'),
       ),
       body: Center(
         child: SingleChildScrollView(
@@ -72,23 +86,15 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   obscureText: true,
                   validator: (value) =>
-                      value!.isEmpty ? 'Please enter your password' : null,
+                      value!.length < 6 ? 'Password must be at least 6 characters' : null,
                 ),
                 const SizedBox(height: 24),
                 _isLoading
                     ? const CircularProgressIndicator()
                     : ElevatedButton(
-                        onPressed: _login,
-                        child: const Text('Login'),
+                        onPressed: _register,
+                        child: const Text('Register'),
                       ),
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).push(MaterialPageRoute(
-                      builder: (context) => const SignupScreen(),
-                    ));
-                  },
-                  child: const Text('Don\'t have an account? Register'),
-                ),
               ],
             ),
           ),

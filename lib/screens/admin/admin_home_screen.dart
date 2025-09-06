@@ -1,8 +1,13 @@
-
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:myapp/screens/admin/announcements_tab.dart';
 import 'package:myapp/screens/admin/categories_tab.dart';
 import 'package:myapp/screens/admin/orders_tab.dart';
 import 'package:myapp/screens/admin/products_tab.dart';
+import 'package:myapp/screens/admin/reports_tab.dart';
+import 'package:myapp/screens/admin/settings_tab.dart';
+import 'package:myapp/screens/admin/townships_tab.dart';
+import 'package:myapp/screens/admin/users_tab.dart';
 
 class AdminHomeScreen extends StatefulWidget {
   const AdminHomeScreen({super.key});
@@ -11,50 +16,67 @@ class AdminHomeScreen extends StatefulWidget {
   State<AdminHomeScreen> createState() => _AdminHomeScreenState();
 }
 
-class _AdminHomeScreenState extends State<AdminHomeScreen> {
-  int _currentIndex = 0;
+class _AdminHomeScreenState extends State<AdminHomeScreen>
+    with SingleTickerProviderStateMixin {
+  late TabController _tabController;
 
-  final List<Widget> _tabs = [
-    const ProductsTab(),
-    const CategoriesTab(),
-    const OrdersTab(),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 8, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Admin Panel'),
+        title: Text('Admin Panel',
+            style: theme.textTheme.titleLarge
+                ?.copyWith(color: theme.colorScheme.onPrimary)),
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
-            onPressed: () {
-              // TODO: Implement logout functionality
+            onPressed: () async {
+              await FirebaseAuth.instance.signOut();
             },
           ),
         ],
+        bottom: TabBar(
+          controller: _tabController,
+          isScrollable: true,
+          indicatorColor: theme.colorScheme.onPrimary,
+          labelColor: theme.colorScheme.onPrimary,
+          unselectedLabelColor: theme.colorScheme.onPrimary.withAlpha(178),
+          tabs: const [
+            Tab(icon: Icon(Icons.fastfood), text: 'Products'),
+            Tab(icon: Icon(Icons.category), text: 'Categories'),
+            Tab(icon: Icon(Icons.receipt), text: 'Orders'),
+            Tab(icon: Icon(Icons.people), text: 'Users'),
+            Tab(icon: Icon(Icons.location_city), text: 'Townships'),
+            Tab(icon: Icon(Icons.announcement), text: 'Announcements'),
+            Tab(icon: Icon(Icons.bar_chart), text: 'Reports'),
+            Tab(icon: Icon(Icons.settings), text: 'Settings'),
+          ],
+        ),
       ),
-      body: _tabs[_currentIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.shopping_bag),
-            label: 'Products',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.category),
-            label: 'Categories',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.receipt_long),
-            label: 'Orders',
-          ),
+      body: TabBarView(
+        controller: _tabController,
+        children: const [
+          ProductsTab(),
+          CategoriesTab(),
+          OrdersTab(),
+          UsersTab(),
+          TownshipsTab(),
+          AnnouncementsTab(),
+          ReportsTab(),
+          SettingsTab(),
         ],
       ),
     );
