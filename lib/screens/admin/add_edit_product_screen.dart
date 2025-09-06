@@ -20,6 +20,7 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
   final _nameController = TextEditingController();
   final _priceController = TextEditingController();
   final _descriptionController = TextEditingController();
+  final _stockController = TextEditingController(); // Add stock controller
 
   File? _imageFile;
   String? _imageUrl;
@@ -31,6 +32,15 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
     if (widget.productId != null) {
       _loadProductData();
     }
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _priceController.dispose();
+    _descriptionController.dispose();
+    _stockController.dispose(); // Dispose stock controller
+    super.dispose();
   }
 
   Future<void> _loadProductData() async {
@@ -47,6 +57,7 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
         _nameController.text = data['name'] ?? '';
         _priceController.text = (data['price'] ?? 0.0).toString();
         _descriptionController.text = data['description'] ?? '';
+        _stockController.text = (data['stock'] ?? 0).toString(); // Load stock
         _imageUrl = data['imageUrl'];
       }
     } catch (e) {
@@ -105,6 +116,7 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
         'price': double.parse(_priceController.text),
         'description': _descriptionController.text,
         'imageUrl': imageUrl,
+        'stock': int.parse(_stockController.text), // Save stock
       };
 
       try {
@@ -202,7 +214,7 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
                       decoration: const InputDecoration(
                         labelText: 'Price',
                         border: OutlineInputBorder(),
-                        prefixText: '\$',
+                        prefixText: 'MMK ',
                       ),
                       keyboardType: const TextInputType.numberWithOptions(decimal: true),
                       validator: (value) {
@@ -211,6 +223,24 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
                         }
                         if (double.tryParse(value) == null) {
                           return 'Please enter a valid number';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _stockController, // Add stock field
+                      decoration: const InputDecoration(
+                        labelText: 'Stock Quantity',
+                        border: OutlineInputBorder(),
+                      ),
+                      keyboardType: TextInputType.number,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter the stock quantity';
+                        }
+                        if (int.tryParse(value) == null) {
+                          return 'Please enter a valid whole number';
                         }
                         return null;
                       },

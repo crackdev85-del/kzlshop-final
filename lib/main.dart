@@ -1,10 +1,11 @@
 
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'firebase_options.dart';
-import 'package:myapp/widgets/auth_wrapper.dart';
+
+import 'package:myapp/firebase_options.dart';
+import 'package:myapp/screens/main_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -19,15 +20,13 @@ void main() async {
   );
 }
 
-// ThemeProvider class to manage the theme state
 class ThemeProvider with ChangeNotifier {
-  ThemeMode _themeMode = ThemeMode.system; // Default to system theme
+  ThemeMode _themeMode = ThemeMode.system;
 
   ThemeMode get themeMode => _themeMode;
 
   void toggleTheme() {
-    _themeMode =
-        _themeMode == ThemeMode.light ? ThemeMode.dark : ThemeMode.light;
+    _themeMode = _themeMode == ThemeMode.light ? ThemeMode.dark : ThemeMode.light;
     notifyListeners();
   }
 
@@ -44,69 +43,54 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     const Color primarySeedColor = Colors.deepPurple;
 
-    // Define a common TextTheme
     final TextTheme appTextTheme = TextTheme(
-      displayLarge:
-          GoogleFonts.oswald(fontSize: 57, fontWeight: FontWeight.bold),
+      displayLarge: GoogleFonts.oswald(fontSize: 57, fontWeight: FontWeight.bold),
       titleLarge: GoogleFonts.roboto(fontSize: 22, fontWeight: FontWeight.w500),
       bodyMedium: GoogleFonts.openSans(fontSize: 14),
     );
 
-    // Create ColorSchemes first for more consistent theming
-    final lightColorScheme = ColorScheme.fromSeed(
-      seedColor: primarySeedColor,
-      brightness: Brightness.light,
-    );
-
-    final darkColorScheme = ColorScheme.fromSeed(
-      seedColor: primarySeedColor,
-      brightness: Brightness.dark,
-    );
-
-    // Light Theme
     final ThemeData lightTheme = ThemeData(
       useMaterial3: true,
-      colorScheme: lightColorScheme,
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: primarySeedColor,
+        brightness: Brightness.light,
+      ),
       textTheme: appTextTheme,
       appBarTheme: AppBarTheme(
-        backgroundColor: lightColorScheme.primary,
-        foregroundColor: lightColorScheme.onPrimary,
-        titleTextStyle:
-            GoogleFonts.oswald(fontSize: 24, fontWeight: FontWeight.bold),
+        backgroundColor: primarySeedColor,
+        foregroundColor: Colors.white,
+        titleTextStyle: GoogleFonts.oswald(fontSize: 24, fontWeight: FontWeight.bold),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: lightColorScheme.primary,
-          foregroundColor: lightColorScheme.onPrimary,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          foregroundColor: Colors.white,
+          backgroundColor: primarySeedColor,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-          textStyle:
-              GoogleFonts.roboto(fontSize: 16, fontWeight: FontWeight.w500),
+          textStyle: GoogleFonts.roboto(fontSize: 16, fontWeight: FontWeight.w500),
         ),
       ),
     );
 
-    // Dark Theme
     final ThemeData darkTheme = ThemeData(
       useMaterial3: true,
-      colorScheme: darkColorScheme,
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: primarySeedColor,
+        brightness: Brightness.dark,
+      ),
       textTheme: appTextTheme,
       appBarTheme: AppBarTheme(
-        backgroundColor: darkColorScheme.primaryContainer,
-        foregroundColor: darkColorScheme.onPrimaryContainer,
-        titleTextStyle:
-            GoogleFonts.oswald(fontSize: 24, fontWeight: FontWeight.bold),
+        backgroundColor: Colors.grey[900],
+        foregroundColor: Colors.white,
+        titleTextStyle: GoogleFonts.oswald(fontSize: 24, fontWeight: FontWeight.bold),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: darkColorScheme.primary,
-          foregroundColor: darkColorScheme.onPrimary,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          foregroundColor: Colors.black,
+          backgroundColor: Colors.deepPurple.shade200, // Corrected this line
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-          textStyle:
-              GoogleFonts.roboto(fontSize: 16, fontWeight: FontWeight.w500),
+          textStyle: GoogleFonts.roboto(fontSize: 16, fontWeight: FontWeight.w500),
         ),
       ),
     );
@@ -114,11 +98,11 @@ class MyApp extends StatelessWidget {
     return Consumer<ThemeProvider>(
       builder: (context, themeProvider, child) {
         return MaterialApp(
-          title: 'Flutter E-Commerce App',
+          title: 'KZL Shop',
           theme: lightTheme,
           darkTheme: darkTheme,
           themeMode: themeProvider.themeMode,
-          home: const AuthWrapper(),
+          home: const MainScreen(),
         );
       },
     );
