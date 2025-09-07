@@ -1,7 +1,6 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:myapp/constants.dart';
 
 class AnnouncementsTab extends StatelessWidget {
   const AnnouncementsTab({super.key});
@@ -62,8 +61,8 @@ class AnnouncementsTab extends StatelessWidget {
         onPressed: () {
           _showAddAnnouncementDialog(context);
         },
-        child: const Icon(Icons.add),
         tooltip: 'Add Announcement',
+        child: const Icon(Icons.add),
       ),
     );
   }

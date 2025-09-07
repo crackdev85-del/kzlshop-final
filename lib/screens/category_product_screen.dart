@@ -55,7 +55,7 @@ class CategoryProductScreen extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => ProductDetailScreen(productId: product.id, product: product.data() as Map<String, dynamic>),
+                      builder: (context) => ProductDetailScreen(productId: product.id),
                     ),
                   );
                 },

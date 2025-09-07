@@ -34,16 +34,18 @@ class AuthWrapper extends StatelessWidget {
               }
 
               if (roleSnapshot.hasData && roleSnapshot.data!.exists) {
-                final role = roleSnapshot.data!['role'];
+                final data = roleSnapshot.data!.data() as Map<String, dynamic>?;
+                final role = data?['role'];
+
                 if (role == 'admin') {
                   return const AdminHomeScreen();
-                } else {
+                } else if (role == 'user') {
                   return const HomeScreen();
                 }
               }
 
-              // If no role or document, default to HomeScreen
-              return const HomeScreen();
+              // If role is not 'admin' or 'user', or document doesn't exist, go to LoginScreen
+              return const LoginScreen();
             },
           );
         } else {

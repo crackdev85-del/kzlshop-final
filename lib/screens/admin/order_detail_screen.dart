@@ -86,7 +86,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
           const SizedBox(height: 24),
           Text('Items Ordered', style: theme.textTheme.titleMedium),
           const Divider(),
-          ...items.map((item) => _buildItemTile(item)).toList(),
+          ...items.map((item) => _buildItemTile(item)),
         ],
       ),
     );
@@ -118,7 +118,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
           children: [
             Expanded(
               child: DropdownButtonFormField<String>(
-                value: _currentStatus,
+                initialValue: _currentStatus,
                 decoration: const InputDecoration(
                   border: OutlineInputBorder(),
                   contentPadding: EdgeInsets.symmetric(horizontal: 12),
