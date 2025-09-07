@@ -1,4 +1,5 @@
 
+import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:myapp/constants.dart';
@@ -51,8 +52,8 @@ class ProductsTab extends StatelessWidget {
                 margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 child: ListTile(
                   leading: imageUrl.isNotEmpty
-                      ? Image.network(
-                          imageUrl,
+                      ? Image.memory(
+                          base64Decode(imageUrl.split(',').last),
                           width: 50,
                           height: 50,
                           fit: BoxFit.cover,

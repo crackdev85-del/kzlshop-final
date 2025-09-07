@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:myapp/providers/cart_provider.dart';
@@ -39,8 +40,8 @@ class ProductCard extends StatelessWidget {
               child: Container(
                 color: Colors.grey[200],
                 child: imageUrl != null && imageUrl.isNotEmpty
-                    ? Image.network(
-                        imageUrl,
+                    ? Image.memory(
+                        base64Decode(imageUrl.split(',').last),
                         fit: BoxFit.cover,
                         errorBuilder: (context, error, stackTrace) {
                           return const Center(

@@ -3,33 +3,42 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class CartItem {
-  final String id;
+  final String id; // Product ID
   final String name;
+  final int quantity;
   final double price;
-  int quantity;
+  final QueryDocumentSnapshot product; // Changed from 'dynamic'
 
   CartItem({
     required this.id,
     required this.name,
+    required this.quantity,
     required this.price,
-    this.quantity = 1,
+    required this.product,
   });
+
+  CartItem copyWith({
+    int? quantity,
+  }) {
+    return CartItem(
+      id: id,
+      name: name,
+      quantity: quantity ?? this.quantity,
+      price: price,
+      product: product,
+    );
+  }
 }
 
 class CartProvider with ChangeNotifier {
-  final Map<String, CartItem> _items = {};
+  Map<String, CartItem> _items = {};
 
   Map<String, CartItem> get items {
     return {..._items};
   }
 
   int get itemCount {
-    // This should return the total number of items, not just unique products.
-    int count = 0;
-    _items.forEach((key, cartItem) {
-      count += cartItem.quantity;
-    });
-    return count;
+    return _items.length;
   }
 
   double get totalAmount {
@@ -40,30 +49,28 @@ class CartProvider with ChangeNotifier {
     return total;
   }
 
-  void addItem(DocumentSnapshot product, {int quantity = 1}) {
+  void addItem(QueryDocumentSnapshot product, {int quantity = 1}) {
     final productId = product.id;
     final productData = product.data() as Map<String, dynamic>;
 
     if (_items.containsKey(productId)) {
-      // if item already in cart, update its quantity
+      // Change quantity...
       _items.update(
         productId,
-        (existingCartItem) => CartItem(
-          id: existingCartItem.id,
-          name: existingCartItem.name,
-          price: existingCartItem.price,
-          quantity: existingCartItem.quantity + quantity, // Add the new quantity
+        (existingCartItem) => existingCartItem.copyWith(
+          quantity: existingCartItem.quantity + quantity,
         ),
       );
     } else {
-      // if item not in cart, add it
+      // Add a new item...
       _items.putIfAbsent(
         productId,
         () => CartItem(
-          id: product.id,
-          name: productData['name'] ?? '',
-          price: (productData['price'] ?? 0).toDouble(),
-          quantity: quantity, // Set the initial quantity
+          id: productId,
+          name: productData['name'] ?? 'No Name',
+          price: (productData['price'] ?? 0.0).toDouble(),
+          quantity: quantity,
+          product: product, // Pass the full product snapshot
         ),
       );
     }
@@ -75,7 +82,6 @@ class CartProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  // New method to remove a single item from a cart item's quantity
   void removeSingleItem(String productId) {
     if (!_items.containsKey(productId)) {
       return;
@@ -83,11 +89,9 @@ class CartProvider with ChangeNotifier {
     if (_items[productId]!.quantity > 1) {
       _items.update(
           productId,
-          (existing) => CartItem(
-              id: existing.id,
-              name: existing.name,
-              price: existing.price,
-              quantity: existing.quantity - 1));
+          (existingCartItem) => existingCartItem.copyWith(
+                quantity: existingCartItem.quantity - 1,
+              ));
     } else {
       _items.remove(productId);
     }
@@ -95,7 +99,7 @@ class CartProvider with ChangeNotifier {
   }
 
   void clearCart() {
-    _items.clear();
+    _items = {};
     notifyListeners();
   }
 }

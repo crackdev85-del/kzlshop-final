@@ -1,4 +1,3 @@
-
 const String appId = "default-app-id";
 
 // COLLECTIONS
@@ -12,3 +11,13 @@ const String ordersCollectionPath = 'artifacts/$appId/public/data/orders';
 // SETTINGS: single doc to hold shop name, logo and splash
 const String settingsCollectionPath = 'artifacts/$appId/public/data/settings';
 const String settingsDocId = 'meta';
+
+class Constants {
+  // Product Fields
+  static const String productName = 'name';
+  static const String productPrice = 'price';
+  static const String productQuantity = 'quantity';
+  static const String productDescription = 'description';
+  static const String productImageUrl = 'imageUrl';
+  static const String productCategoryId = 'categoryId'; // Added this
+}

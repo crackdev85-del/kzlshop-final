@@ -1,6 +1,9 @@
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:myapp/providers/cart_provider.dart';
+import 'package:myapp/providers/order_provider.dart';
+import 'package:myapp/screens/user/product_detail_screen.dart';
 import 'package:provider/provider.dart';
 
 class CartScreen extends StatelessWidget {
@@ -9,6 +12,35 @@ class CartScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cart = Provider.of<CartProvider>(context);
+    final theme = Theme.of(context);
+
+    void _showRemoveConfirmationDialog(String productId) {
+      showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text('Are you sure?'),
+          content: const Text(
+            'Do you want to remove the item from the cart?',
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('No'),
+              onPressed: () {
+                Navigator.of(ctx).pop();
+              },
+            ),
+            TextButton(
+              child: const Text('Yes'),
+              onPressed: () {
+                Provider.of<CartProvider>(context, listen: false).removeItem(productId);
+                Navigator.of(ctx).pop();
+              },
+            ),
+          ],
+        ),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('သင်၏ ဈေးဝယ်စာရင်း'), // "Your Cart" in Burmese
@@ -23,31 +55,36 @@ class CartScreen extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: <Widget>[
                   const Text(
-                    'စုစုပေါင်း', // "Total" in Burmese
+                    'Total',
                     style: TextStyle(fontSize: 20),
                   ),
                   const Spacer(),
                   Chip(
                     label: Text(
-                      '${cart.totalAmount.toStringAsFixed(0)} ကျပ်', // "Kyat" in Burmese
+                      '${cart.totalAmount.toStringAsFixed(2)} Kyat',
                       style: TextStyle(
-                        color: Theme.of(context).primaryTextTheme.titleLarge?.color,
+                        color: theme.primaryTextTheme.titleLarge?.color,
                       ),
                     ),
-                    backgroundColor: Theme.of(context).primaryColor,
+                    backgroundColor: theme.primaryColor,
                   ),
                   TextButton(
-                    onPressed: cart.totalAmount <= 0 ? null : () {
-                      // TODO: Implement actual order logic (e.g., save to Firestore)
-                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Order placed successfully! (simulation)'),
-                          duration: Duration(seconds: 2),
-                        ),
-                      );
-                      cart.clearCart();
-                    },
-                    child: const Text('မှာယူမည်'),
+                    onPressed: (cart.totalAmount <= 0)
+                        ? null
+                        : () {
+                            Provider.of<OrderProvider>(context, listen: false).addOrder(
+                              cart.items.values.toList(),
+                              cart.totalAmount,
+                            );
+                            cart.clearCart(); // Corrected this line
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Order placed successfully!'),
+                                duration: Duration(seconds: 2),
+                              ),
+                            );
+                          },
+                    child: const Text('ORDER NOW'),
                   )
                 ],
               ),
@@ -58,76 +95,40 @@ class CartScreen extends StatelessWidget {
             child: ListView.builder(
               itemCount: cart.items.length,
               itemBuilder: (ctx, i) {
-                final cartItem = cart.items.values.toList()[i];
-                final productId = cart.items.keys.toList()[i];
-                return Dismissible(
-                  key: ValueKey(cartItem.id),
-                  background: Container(
-                    color: Theme.of(context).colorScheme.error,
-                    alignment: Alignment.centerRight,
-                    padding: const EdgeInsets.only(right: 20),
-                    margin: const EdgeInsets.symmetric(
-                      horizontal: 15,
-                      vertical: 4,
-                    ),
-                    child: const Icon(
-                      Icons.delete,
-                      color: Colors.white,
-                      size: 40,
-                    ),
+                String productId = cart.items.keys.toList()[i];
+                CartItem cartItem = cart.items.values.toList()[i];
+                return Card(
+                  margin: const EdgeInsets.symmetric(
+                    horizontal: 15,
+                    vertical: 4,
                   ),
-                  direction: DismissDirection.endToStart,
-                  confirmDismiss: (direction) {
-                    return showDialog(
-                      context: context,
-                      builder: (ctx) => AlertDialog(
-                        title: const Text('Are you sure?'),
-                        content: const Text(
-                          'Do you want to remove the item from the cart?',
+                  child: ListTile(
+                    onTap: () {
+                       // Navigate to Product Detail Screen
+                        Navigator.of(context).push(MaterialPageRoute(
+                            builder: (context) => ProductDetailScreen(product: cartItem.product),
+                        ));
+                    },
+                    leading: CircleAvatar(
+                      backgroundColor: Theme.of(context).primaryColor,
+                      child: Padding(
+                        padding: const EdgeInsets.all(5),
+                        child: FittedBox(
+                          child: Text('${cartItem.price.toStringAsFixed(0)}'),
                         ),
-                        actions: <Widget>[
-                          TextButton(
-                            child: const Text('No'),
-                            onPressed: () {
-                              Navigator.of(ctx).pop(false);
-                            },
-                          ),
-                          TextButton(
-                            child: const Text('Yes'),
-                            onPressed: () {
-                              Navigator.of(ctx).pop(true);
-                            },
-                          ),
-                        ],
                       ),
-                    );
-                  },
-                  onDismissed: (direction) {
-                    Provider.of<CartProvider>(context, listen: false)
-                        .removeItem(productId);
-                  },
-                  child: Card(
-                    margin: const EdgeInsets.symmetric(
-                      horizontal: 15,
-                      vertical: 4,
                     ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(8),
-                      child: ListTile(
-                        leading: CircleAvatar(
-                          backgroundColor: Theme.of(context).primaryColor,
-                          child: Padding(
-                            padding: const EdgeInsets.all(5),
-                            child: FittedBox(
-                              child: Text(cartItem.price.toString(), style: const TextStyle(color: Colors.white)),
-                            ),
-                          ),
+                    title: Text(cartItem.name),
+                    subtitle: Text('Total: ${(cartItem.price * cartItem.quantity).toStringAsFixed(2)}'),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text('${cartItem.quantity} x'),
+                        IconButton(
+                          icon: const Icon(Icons.delete_outline, color: Colors.red),
+                          onPressed: () => _showRemoveConfirmationDialog(productId),
                         ),
-                        title: Text(cartItem.name),
-                        subtitle: Text(
-                            'Total: ${(cartItem.price * cartItem.quantity)} ကျပ်'),
-                        trailing: Text('${cartItem.quantity} x'),
-                      ),
+                      ],
                     ),
                   ),
                 );

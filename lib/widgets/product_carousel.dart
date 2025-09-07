@@ -1,8 +1,8 @@
 
+import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-
-import 'package:myapp/screens/product_detail_screen.dart';
+import 'package:myapp/screens/user/product_detail_screen.dart';
 
 class ProductCarousel extends StatelessWidget {
   final String category;
@@ -57,7 +57,7 @@ class ProductCard extends StatelessWidget {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => ProductDetailScreen(productId: product.id),
+            builder: (context) => ProductDetailScreen(product: product),
           ),
         );
       },
@@ -74,8 +74,8 @@ class ProductCard extends StatelessWidget {
                     topLeft: Radius.circular(12.0),
                     topRight: Radius.circular(12.0),
                   ),
-                  child: Image.network(
-                    product['imageUrl'],
+                  child: Image.memory(
+                    base64Decode(product['imageUrl'].split(',').last),
                     fit: BoxFit.cover,
                     width: double.infinity,
                   ),

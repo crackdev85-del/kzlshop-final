@@ -2,6 +2,7 @@
 import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:myapp/providers/cart_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -16,11 +17,57 @@ class ProductDetailScreen extends StatefulWidget {
 
 class ProductDetailScreenState extends State<ProductDetailScreen> {
   int _selectedQuantity = 1;
+  late TextEditingController _quantityController;
+
+  @override
+  void initState() {
+    super.initState();
+    _quantityController = TextEditingController(text: _selectedQuantity.toString());
+    
+    _quantityController.addListener(() {
+      final text = _quantityController.text;
+      if (text.isNotEmpty) {
+        try {
+          int newQuantity = int.parse(text);
+          final availableQuantity = (widget.product.data() as Map<String, dynamic>)['quantity'] ?? 0;
+          
+          if (newQuantity > availableQuantity) {
+            newQuantity = availableQuantity;
+            _quantityController.text = newQuantity.toString();
+            _quantityController.selection = TextSelection.fromPosition(TextPosition(offset: _quantityController.text.length));
+             if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Cannot add more than available quantity.')),
+                );
+            }
+          }
+          
+          if (newQuantity < 1 && availableQuantity > 0) {
+             newQuantity = 1;
+          }
+
+          if (_selectedQuantity != newQuantity) {
+            setState(() {
+              _selectedQuantity = newQuantity;
+            });
+          }
+        } catch (e) {
+          // Handle parsing error, maybe reset to a default
+          setState(() {
+            _selectedQuantity = 1;
+          });
+          _quantityController.text = _selectedQuantity.toString();
+        }
+      }
+    });
+  }
+
 
   void _incrementQuantity(int availableQuantity) {
     if (_selectedQuantity < availableQuantity) {
       setState(() {
         _selectedQuantity++;
+        _quantityController.text = _selectedQuantity.toString();
       });
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -33,8 +80,15 @@ class ProductDetailScreenState extends State<ProductDetailScreen> {
     if (_selectedQuantity > 1) {
       setState(() {
         _selectedQuantity--;
+        _quantityController.text = _selectedQuantity.toString();
       });
     }
+  }
+
+  @override
+  void dispose() {
+    _quantityController.dispose();
+    super.dispose();
   }
 
   @override
@@ -43,13 +97,12 @@ class ProductDetailScreenState extends State<ProductDetailScreen> {
     final theme = Theme.of(context);
     final productData = widget.product.data() as Map<String, dynamic>;
 
-    // Using the final, strict data model with 'imageUrl'
     final imageUrl = productData['imageUrl'] as String?;
     final availableQuantity = (productData['quantity'] ?? 0) as int;
     final name = productData['name'] ?? 'No Name';
     final price = productData['price'] ?? 0.0;
     final description = productData['description'] ?? 'No description available.';
-    final category = productData['category'] as String?;
+    final categoryId = productData['categoryId'] as String?;
 
     return Scaffold(
       appBar: AppBar(
@@ -61,13 +114,12 @@ class ProductDetailScreenState extends State<ProductDetailScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // 1. Large Image
             if (imageUrl != null && imageUrl.isNotEmpty)
               Container(
                 height: 300,
                 color: Colors.grey[200],
                 child: Image.memory(
-                  base64Decode(imageUrl),
+                  base64Decode(imageUrl.split(',').last),
                   fit: BoxFit.cover,
                   errorBuilder: (context, error, stackTrace) {
                     return const Icon(Icons.error, size: 50, color: Colors.red);
@@ -86,36 +138,37 @@ class ProductDetailScreenState extends State<ProductDetailScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Category
-                  if (category != null)
-                    Chip(
-                      label: Text(category),
-                      backgroundColor: theme.colorScheme.secondaryContainer,
+                  if (categoryId != null)
+                    FutureBuilder<DocumentSnapshot>(
+                      future: FirebaseFirestore.instance.collection('categories').doc(categoryId).get(),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState == ConnectionState.done && snapshot.hasData) {
+                          final categoryData = snapshot.data!.data() as Map<String, dynamic>;
+                          return Chip(
+                            label: Text(categoryData['name'] ?? 'Uncategorized'),
+                            backgroundColor: theme.colorScheme.secondaryContainer,
+                          );
+                        }
+                        return const SizedBox.shrink();
+                      },
                     ),
                   const SizedBox(height: 8),
-                  // 2. Product Name
                   Text(
                     name,
                     style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 8),
-
-                  // 3. Price
                   Text(
                     '$price Kyat',
                     style: theme.textTheme.titleLarge?.copyWith(color: theme.colorScheme.primary, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 16),
-
-                  // 5. Quantity Chip
                   Chip(
                     label: Text(availableQuantity > 0 ? 'In Stock: $availableQuantity items' : 'Out of Stock'),
                     backgroundColor: availableQuantity > 0 ? Colors.green.shade100 : Colors.red.shade100,
                     labelStyle: TextStyle(color: availableQuantity > 0 ? Colors.green.shade800 : Colors.red.shade800),
                   ),
                   const SizedBox(height: 16),
-
-                  // 4. Full Description
                   Text(
                     'Description',
                     style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
@@ -126,32 +179,41 @@ class ProductDetailScreenState extends State<ProductDetailScreen> {
                     style: theme.textTheme.bodyMedium?.copyWith(height: 1.5),
                   ),
                   const SizedBox(height: 24),
-
-                  // 6. Quantity Selector
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       IconButton(
                         icon: const Icon(Icons.remove_circle_outline),
-                        onPressed: _decrementQuantity,
+                        onPressed: availableQuantity > 0 ? _decrementQuantity : null,
                         iconSize: 32,
                       ),
-                      Text(
-                        '$_selectedQuantity',
-                        style: theme.textTheme.headlineMedium,
+                      SizedBox(
+                        width: 80, // Set a fixed width for the text field
+                        child: TextField(
+                          controller: _quantityController,
+                          textAlign: TextAlign.center,
+                          enabled: availableQuantity > 0,
+                          decoration: const InputDecoration(
+                            border: OutlineInputBorder(),
+                            contentPadding: EdgeInsets.all(8),
+                          ),
+                          style: theme.textTheme.headlineMedium,
+                          keyboardType: TextInputType.number,
+                          inputFormatters: <TextInputFormatter>[
+                            FilteringTextInputFormatter.digitsOnly
+                          ],
+                        ),
                       ),
                       IconButton(
                         icon: const Icon(Icons.add_circle_outline),
-                        onPressed: () => _incrementQuantity(availableQuantity),
+                        onPressed: availableQuantity > 0 ? () => _incrementQuantity(availableQuantity) : null,
                         iconSize: 32,
                       ),
                     ],
                   ),
                   const SizedBox(height: 24),
-
-                  // 7. "Add to Cart" Button
                   ElevatedButton.icon(
-                    onPressed: availableQuantity > 0 ? () {
+                    onPressed: availableQuantity > 0 && _selectedQuantity > 0 ? () {
                       cart.addItem(widget.product, quantity: _selectedQuantity);
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
@@ -162,7 +224,7 @@ class ProductDetailScreenState extends State<ProductDetailScreen> {
                       if (mounted) {
                         Navigator.of(context).pop();
                       }
-                    } : null, // Disable button if out of stock
+                    } : null, // Disable button if out of stock or quantity is 0
                     icon: const Icon(Icons.add_shopping_cart),
                     label: const Text('Add to Cart'),
                     style: ElevatedButton.styleFrom(

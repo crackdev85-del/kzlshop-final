@@ -21,63 +21,193 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _priceController = TextEditingController();
-  final _descriptionController = TextEditingController();
   final _quantityController = TextEditingController();
+  final _descriptionController = TextEditingController();
 
-  File? _imageFile;
-  String? _currentImageUrl; // Keep this as imageUrl
+  final ImagePicker _picker = ImagePicker();
+  XFile? _imageFile;
+  String? _imageUrl;
   bool _isLoading = false;
 
-  List<String> _categories = [];
-  String? _selectedCategory;
+  // New variables for categories
+  String? _selectedCategoryId;
+  List<DropdownMenuItem<String>> _categoryItems = [];
+  bool _isFetchingCategories = true;
 
   @override
   void initState() {
     super.initState();
-    _fetchCategoriesAndThenLoadProduct();
+    _fetchCategories();
+    if (widget.productId != null) {
+      _fetchProduct();
+    }
   }
 
-  Future<void> _fetchCategoriesAndThenLoadProduct() async {
-    setState(() => _isLoading = true);
+  Future<void> _fetchCategories() async {
+    setState(() {
+      _isFetchingCategories = true;
+    });
     try {
-      final categoriesSnapshot = await FirebaseFirestore.instance.collection('categories').get();
+      final snapshot = await FirebaseFirestore.instance.collection('categories').get();
+      final categories = snapshot.docs.map((doc) {
+        return DropdownMenuItem<String>(
+          value: doc.id,
+          child: Text(doc.data()['name'] ?? 'Unnamed Category'),
+        );
+      }).toList();
+      setState(() {
+        _categoryItems = categories;
+      });
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to fetch categories: $e')),
+        );
+      }
+    } finally {
       if (mounted) {
         setState(() {
-          _categories = categoriesSnapshot.docs.map((doc) => doc['name'] as String).toList();
+          _isFetchingCategories = false;
         });
       }
+    }
+  }
 
-      if (widget.productId != null) {
-        await _loadProductData();
+  Future<void> _fetchProduct() async {
+    setState(() {
+      _isLoading = true;
+    });
+    try {
+      final doc = await FirebaseFirestore.instance.collection('products').doc(widget.productId).get();
+      if (doc.exists) {
+        final data = doc.data()!;
+        _nameController.text = data[Constants.productName] ?? '';
+        _priceController.text = (data[Constants.productPrice] ?? 0).toString();
+        _quantityController.text = (data[Constants.productQuantity] ?? 0).toString();
+        _descriptionController.text = data[Constants.productDescription] ?? '';
+        _selectedCategoryId = data[Constants.productCategoryId];
+
+        if (data[Constants.productImageUrl] != null) {
+          setState(() {
+            _imageUrl = data[Constants.productImageUrl];
+          });
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Product not found. It might have been deleted.')),
+          );
+          Navigator.of(context).pop();
+        }
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to load initial data: $e')),
+          SnackBar(content: Text('Failed to fetch product: $e')),
         );
       }
-    }
-    if (mounted) {
-      setState(() => _isLoading = false);
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
-  Future<void> _loadProductData() async {
-    final doc = await FirebaseFirestore.instance.collection(productsCollectionPath).doc(widget.productId).get();
-    if (doc.exists && mounted) {
-      final data = doc.data()!;
-      setState(() {
-        _nameController.text = data['name'] ?? '';
-        _priceController.text = (data['price'] ?? 0.0).toString();
-        _descriptionController.text = data['description'] ?? '';
-        _quantityController.text = (data['quantity'] ?? 0).toString();
-        _selectedCategory = data['category'] as String?;
-        _currentImageUrl = data['imageUrl'] as String?; // Changed to imageUrl
+  Future<void> _pickImage() async {
+    try {
+      final pickedFile = await _picker.pickImage(source: ImageSource.gallery, imageQuality: 50);
+      if (pickedFile != null) {
+        setState(() {
+          _imageFile = pickedFile;
+          _imageUrl = null; 
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to pick image: $e')),
+        );
+      }
+    }
+  }
 
-        if (_selectedCategory != null && !_categories.contains(_selectedCategory)) {
-          _selectedCategory = null;
-        }
-      });
+  Future<String> _uploadImage(XFile imageFile) async {
+    final Uint8List imageBytes = await imageFile.readAsBytes();
+    img.Image? originalImage = img.decodeImage(imageBytes);
+
+    if (originalImage == null) {
+      throw Exception("Could not decode image");
+    }
+    img.Image resizedImage = img.copyResize(originalImage, width: 300);
+    List<int> compressedImage = img.encodeJpg(resizedImage, quality: 85);
+    String base64Image = base64Encode(compressedImage);
+    return 'data:image/jpeg;base64,$base64Image';
+  }
+
+  Future<void> _saveProduct() async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+     if (_selectedCategoryId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please select a category.')),
+      );
+      return;
+    }
+    if (_imageFile == null && _imageUrl == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please select an image for the product.')),
+      );
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      String? finalImageUrl = _imageUrl;
+      if (_imageFile != null) {
+        finalImageUrl = await _uploadImage(_imageFile!);
+      }
+      
+      if(finalImageUrl == null){
+          throw Exception("Image URL is null after processing.");
+      }
+
+      final productData = {
+        Constants.productName: _nameController.text,
+        Constants.productPrice: double.tryParse(_priceController.text) ?? 0.0,
+        Constants.productQuantity: int.tryParse(_quantityController.text) ?? 0,
+        Constants.productDescription: _descriptionController.text,
+        Constants.productImageUrl: finalImageUrl,
+        Constants.productCategoryId: _selectedCategoryId, // Add categoryId
+        'createdAt': FieldValue.serverTimestamp(),
+      };
+
+      if (widget.productId == null) {
+        await FirebaseFirestore.instance.collection('products').add(productData);
+      } else {
+        await FirebaseFirestore.instance.collection('products').doc(widget.productId).update(productData);
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Product saved successfully!')),
+        );
+        Navigator.of(context).pop();
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to save product: $e')),
+        );
+      }
     }
   }
 
@@ -85,123 +215,18 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
   void dispose() {
     _nameController.dispose();
     _priceController.dispose();
-    _descriptionController.dispose();
     _quantityController.dispose();
+    _descriptionController.dispose();
     super.dispose();
   }
 
-  Future<void> _pickImage() async {
-    final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
-    if (pickedFile != null) {
-      setState(() {
-        _imageFile = File(pickedFile.path);
-        _currentImageUrl = null; 
-      });
-    }
-  }
-
-  Future<String?> _processAndEncodeImage() async {
-    if (_imageFile == null) return _currentImageUrl;
-
-    try {
-      Uint8List imageBytes = await _imageFile!.readAsBytes();
-      const oneMB = 1048576;
-
-      if (imageBytes.length > oneMB) {
-        img.Image? originalImage = img.decodeImage(imageBytes);
-        if (originalImage == null) return null;
-
-        int quality = 90;
-        while (imageBytes.length > oneMB && quality > 10) {
-          imageBytes = Uint8List.fromList(img.encodeJpg(originalImage, quality: quality));
-          quality -= 10;
-        }
-      }
-
-      if (imageBytes.length > oneMB) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Image too large, even after compression.')),
-          );
-        }
-        return null;
-      }
-      return base64Encode(imageBytes);
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to process image: $e')),
-        );
-      }
-      return null;
-    }
-  }
-
-  Future<void> _saveProduct() async {
-    if (_formKey.currentState!.validate()) {
-      if (_imageFile == null && _currentImageUrl == null) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Please select an image.')),
-          );
-        }
-        return;
-      }
-
-      setState(() => _isLoading = true);
-
-      final imageBase64String = await _processAndEncodeImage();
-      if (imageBase64String == null) {
-        if (mounted) {
-          setState(() => _isLoading = false);
-        }
-        return;
-      }
-
-      final productData = {
-        'name': _nameController.text.trim(),
-        'price': double.parse(_priceController.text),
-        'category': _selectedCategory,
-        'quantity': int.parse(_quantityController.text),
-        'imageUrl': imageBase64String, // Changed to imageUrl
-        'description': _descriptionController.text.trim(),
-      };
-
-      try {
-        if (widget.productId != null) {
-          await FirebaseFirestore.instance
-              .collection(productsCollectionPath)
-              .doc(widget.productId)
-              .update(productData);
-        } else {
-          await FirebaseFirestore.instance
-              .collection(productsCollectionPath)
-              .add(productData);
-        }
-        if (mounted) {
-          Navigator.of(context).pop();
-        }
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Failed to save product: $e')),
-          );
-        }
-      } finally {
-        if (mounted) {
-          setState(() => _isLoading = false);
-        }
-      }
-    }
-  }
-
-   @override
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.productId == null ? 'Add Product' : 'Edit Product'),
         actions: [
-          if (_isLoading)
+          if (_isLoading || _isFetchingCategories)
             const Padding(
               padding: EdgeInsets.all(12.0),
               child: SizedBox(height: 24, width: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 3)),
@@ -227,75 +252,84 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
                       child: Container(
                         height: 200,
                         decoration: BoxDecoration(
+                          color: Colors.grey[300],
+                          borderRadius: BorderRadius.circular(12),
                           border: Border.all(color: Colors.grey),
-                          borderRadius: BorderRadius.circular(8),
-                           image: _imageFile != null
-                            ? DecorationImage(image: FileImage(_imageFile!), fit: BoxFit.cover)
-                            : _currentImageUrl != null
-                                ? DecorationImage(image: MemoryImage(base64Decode(_currentImageUrl!)), fit: BoxFit.cover)
-                                : null,
+                           image: _imageUrl != null && _imageUrl!.startsWith('data:image')
+                            ? DecorationImage(image: MemoryImage(base64Decode(_imageUrl!.split(',').last)), fit: BoxFit.cover)
+                            : _imageFile != null
+                                ? DecorationImage(image: FileImage(File(_imageFile!.path)), fit: BoxFit.cover)
+                                : _imageUrl != null
+                                    ? DecorationImage(image: NetworkImage(_imageUrl!), fit: BoxFit.cover)
+                                    : null,
                         ),
-                        child: (_imageFile == null && _currentImageUrl == null)
-                          ? const Center(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(Icons.camera_alt, size: 50, color: Colors.grey),
-                                  SizedBox(height: 8),
-                                  Text('Tap to select image'),
-                                ],
-                              ),
-                            )
-                          : null,
+                        child: (_imageFile == null && _imageUrl == null)
+                            ? const Center(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(Icons.add_a_photo, size: 50, color: Colors.grey),
+                                    SizedBox(height: 8),
+                                    Text('Tap to select image', style: TextStyle(color: Colors.grey)),
+                                  ],
+                                ),
+                              )
+                            : null,
                       ),
                     ),
                     const SizedBox(height: 24),
                     TextFormField(
                       controller: _nameController,
                       decoration: const InputDecoration(labelText: 'Product Name', border: OutlineInputBorder()),
-                      validator: (value) => (value == null || value.isEmpty) ? 'Please enter a name' : null,
+                      validator: (value) => value == null || value.isEmpty ? 'Please enter a name' : null,
                     ),
                     const SizedBox(height: 16),
-                    if (_categories.isNotEmpty)
-                      DropdownButtonFormField<String>(
-                        initialValue: _selectedCategory,
-                        decoration: const InputDecoration(labelText: 'Category', border: OutlineInputBorder()),
-                        items: _categories.map((String category) {
-                          return DropdownMenuItem<String>(
-                            value: category,
-                            child: Text(category),
-                          );
-                        }).toList(),
-                        onChanged: (newValue) {
-                          setState(() {
-                            _selectedCategory = newValue;
-                          });
-                        },
-                        validator: (value) => (value == null) ? 'Please select a category' : null,
-                      )
-                    else
-                       const Text('No categories found. Please add categories first.', style: TextStyle(color: Colors.red)),
+                    // Category Dropdown
+                    _isFetchingCategories
+                        ? const Center(child: CircularProgressIndicator())
+                        : DropdownButtonFormField<String>(
+                            value: _selectedCategoryId,
+                            decoration: const InputDecoration(
+                              labelText: 'Category',
+                              border: OutlineInputBorder(),
+                            ),
+                            items: _categoryItems,
+                            onChanged: (value) {
+                              setState(() {
+                                _selectedCategoryId = value;
+                              });
+                            },
+                            validator: (value) => value == null ? 'Please select a category' : null,
+                          ),
                     const SizedBox(height: 16),
-                    TextFormField(
-                      controller: _priceController,
-                      decoration: const InputDecoration(labelText: 'Price', border: OutlineInputBorder(), prefixText: 'MMK '),
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) return 'Please enter a price';
-                        if (double.tryParse(value) == null) return 'Please enter a valid number';
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      controller: _quantityController,
-                      decoration: const InputDecoration(labelText: 'Quantity', border: OutlineInputBorder()),
-                      keyboardType: TextInputType.number,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) return 'Please enter the quantity';
-                        if (int.tryParse(value) == null) return 'Please enter a valid whole number';
-                        return null;
-                      },
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextFormField(
+                            controller: _priceController,
+                            decoration: const InputDecoration(labelText: 'Price', border: OutlineInputBorder(), prefixText: '\$ '),
+                            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) return 'Please enter the price';
+                              if (double.tryParse(value) == null) return 'Please enter a valid number';
+                              return null;
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: TextFormField(
+                            controller: _quantityController,
+                            decoration: const InputDecoration(labelText: 'Quantity', border: OutlineInputBorder()),
+                            keyboardType: TextInputType.number,
+                            validator: (value) {
+                              if (value == null || value.isEmpty) return 'Please enter the quantity';
+                              if (int.tryParse(value) == null) return 'Please enter a valid whole number';
+                              return null;
+                            },
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 16),
                     TextFormField(
