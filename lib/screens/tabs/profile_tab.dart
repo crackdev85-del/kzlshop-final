@@ -32,15 +32,19 @@ class _ProfileTabState extends State<ProfileTab> {
   Future<void> _logout() async {
     try {
       await FirebaseAuth.instance.signOut();
-      // Navigate to the login screen and remove all previous routes.
-      Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (context) => const LoginScreen()),
-        (route) => false,
-      );
+      if (mounted) {
+        // Navigate to the login screen and remove all previous routes.
+        Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (context) => const LoginScreen()),
+          (route) => false,
+        );
+      }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to log out: ${e.toString()}')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to log out: ${e.toString()}')),
+        );
+      }
     }
   }
 

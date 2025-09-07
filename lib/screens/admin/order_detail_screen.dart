@@ -10,10 +10,10 @@ class OrderDetailScreen extends StatefulWidget {
   const OrderDetailScreen({super.key, required this.orderId});
 
   @override
-  _OrderDetailScreenState createState() => _OrderDetailScreenState();
+  OrderDetailScreenState createState() => OrderDetailScreenState();
 }
 
-class _OrderDetailScreenState extends State<OrderDetailScreen> {
+class OrderDetailScreenState extends State<OrderDetailScreen> {
   String? _currentStatus;
 
   @override
@@ -70,6 +70,10 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
 
   Widget _buildOrderDetails(BuildContext context, Map<String, dynamic> orderData, String customerName, List<dynamic> items, String formattedDate) {
     final theme = Theme.of(context);
+    final shippingAddress = orderData['shippingAddress'] as Map<String, dynamic>?;
+    final addressLine = shippingAddress?['addressLine'] ?? 'N/A';
+    final township = shippingAddress?['township'] ?? 'N/A';
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16.0),
       child: Column(
@@ -80,7 +84,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
           _buildDetailRow('Customer:', customerName),
           _buildDetailRow('Order Date:', formattedDate),
           _buildDetailRow('Total Amount:', 'MMK ${orderData['totalAmount'].toStringAsFixed(2)}'),
-          _buildDetailRow('Shipping Address:', (orderData['shippingAddress']?['addressLine'] ?? "N/A") + ", " + (orderData['shippingAddress']?['township'] ?? "N/A")),
+          _buildDetailRow('Shipping Address:', '$addressLine, $township'),
           const SizedBox(height: 24),
           _buildStatusSection(context, orderData),
           const SizedBox(height: 24),
@@ -118,7 +122,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
           children: [
             Expanded(
               child: DropdownButtonFormField<String>(
-                initialValue: _currentStatus,
+                value: _currentStatus,
                 decoration: const InputDecoration(
                   border: OutlineInputBorder(),
                   contentPadding: EdgeInsets.symmetric(horizontal: 12),
@@ -149,20 +153,26 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     );
   }
 
-  void _updateOrderStatus() {
-    if (_currentStatus != null) {
-      FirebaseFirestore.instance
-          .collection(ordersCollectionPath)
-          .doc(widget.orderId)
-          .update({'status': _currentStatus}).then((_) {
+  Future<void> _updateOrderStatus() async {
+    if (_currentStatus == null) return;
+
+    try {
+      await FirebaseFirestore.instance
+        .collection(ordersCollectionPath)
+        .doc(widget.orderId)
+        .update({'status': _currentStatus});
+      
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Order status updated successfully!')),
         );
-      }).catchError((error) {
+      }
+    } catch (error) {
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Failed to update status: $error')),
         );
-      });
+      }
     }
   }
 

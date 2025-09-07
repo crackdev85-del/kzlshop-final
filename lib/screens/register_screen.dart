@@ -14,6 +14,7 @@ class RegisterScreen extends StatefulWidget {
 class _RegisterScreenState extends State<RegisterScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _usernameController = TextEditingController(); // Add this
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
 
@@ -33,6 +34,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             .collection(usersCollectionPath)
             .doc(userCredential.user!.uid)
             .set({
+          'username': _usernameController.text, // Add this
           'email': _emailController.text,
           'role': 'user', // Default role is 'user'
         });
@@ -41,9 +43,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
           Navigator.of(context).pop();
         }
       } on FirebaseAuthException catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.message ?? 'Registration failed')),
-        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(e.message ?? 'Registration failed')),
+          );
+        }
       } finally {
         if (mounted) {
           setState(() {
@@ -68,6 +72,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
+                TextFormField(
+                  controller: _usernameController, // Add this
+                  decoration: const InputDecoration(
+                    labelText: 'Username',
+                    border: OutlineInputBorder(),
+                  ),
+                  validator: (value) =>
+                      value!.isEmpty ? 'Please enter a username' : null,
+                ),
+                const SizedBox(height: 16),
                 TextFormField(
                   controller: _emailController,
                   decoration: const InputDecoration(

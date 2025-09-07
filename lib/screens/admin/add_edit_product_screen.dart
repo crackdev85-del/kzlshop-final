@@ -41,35 +41,43 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
     setState(() => _isLoading = true);
     try {
       final categoriesSnapshot = await FirebaseFirestore.instance.collection('categories').get();
-      setState(() {
-        _categories = categoriesSnapshot.docs.map((doc) => doc['name'] as String).toList();
-      });
+      if (mounted) {
+        setState(() {
+          _categories = categoriesSnapshot.docs.map((doc) => doc['name'] as String).toList();
+        });
+      }
 
       if (widget.productId != null) {
         await _loadProductData();
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to load initial data: $e')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to load initial data: $e')),
+        );
+      }
     }
-    setState(() => _isLoading = false);
+    if (mounted) {
+      setState(() => _isLoading = false);
+    }
   }
 
   Future<void> _loadProductData() async {
     final doc = await FirebaseFirestore.instance.collection(productsCollectionPath).doc(widget.productId).get();
-    if (doc.exists) {
+    if (doc.exists && mounted) {
       final data = doc.data()!;
-      _nameController.text = data['name'] ?? '';
-      _priceController.text = (data['price'] ?? 0.0).toString();
-      _descriptionController.text = data['description'] ?? '';
-      _quantityController.text = (data['quantity'] ?? 0).toString();
-      _selectedCategory = data['category'] as String?;
-      _currentImageUrl = data['imageUrl'] as String?; // Changed to imageUrl
+      setState(() {
+        _nameController.text = data['name'] ?? '';
+        _priceController.text = (data['price'] ?? 0.0).toString();
+        _descriptionController.text = data['description'] ?? '';
+        _quantityController.text = (data['quantity'] ?? 0).toString();
+        _selectedCategory = data['category'] as String?;
+        _currentImageUrl = data['imageUrl'] as String?; // Changed to imageUrl
 
-      if (_selectedCategory != null && !_categories.contains(_selectedCategory)) {
-        _selectedCategory = null;
-      }
+        if (_selectedCategory != null && !_categories.contains(_selectedCategory)) {
+          _selectedCategory = null;
+        }
+      });
     }
   }
 
@@ -111,16 +119,20 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
       }
 
       if (imageBytes.length > oneMB) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Image too large, even after compression.')),
-        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Image too large, even after compression.')),
+          );
+        }
         return null;
       }
       return base64Encode(imageBytes);
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to process image: $e')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to process image: $e')),
+        );
+      }
       return null;
     }
   }
@@ -128,9 +140,11 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
   Future<void> _saveProduct() async {
     if (_formKey.currentState!.validate()) {
       if (_imageFile == null && _currentImageUrl == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please select an image.')),
-        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Please select an image.')),
+          );
+        }
         return;
       }
 
@@ -138,7 +152,9 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
 
       final imageBase64String = await _processAndEncodeImage();
       if (imageBase64String == null) {
-        setState(() => _isLoading = false);
+        if (mounted) {
+          setState(() => _isLoading = false);
+        }
         return;
       }
 
@@ -162,13 +178,19 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
               .collection(productsCollectionPath)
               .add(productData);
         }
-        Navigator.of(context).pop();
+        if (mounted) {
+          Navigator.of(context).pop();
+        }
       } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to save product: $e')),
-        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Failed to save product: $e')),
+          );
+        }
       } finally {
-        setState(() => _isLoading = false);
+        if (mounted) {
+          setState(() => _isLoading = false);
+        }
       }
     }
   }
@@ -236,7 +258,7 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
                     const SizedBox(height: 16),
                     if (_categories.isNotEmpty)
                       DropdownButtonFormField<String>(
-                        value: _selectedCategory,
+                        initialValue: _selectedCategory,
                         decoration: const InputDecoration(labelText: 'Category', border: OutlineInputBorder()),
                         items: _categories.map((String category) {
                           return DropdownMenuItem<String>(

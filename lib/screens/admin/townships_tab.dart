@@ -93,7 +93,7 @@ class TownshipsTab extends StatelessWidget {
                 if (name.isNotEmpty) {
                   try {
                     await FirebaseFirestore.instance.collection(townshipsCollectionPath).add({'name': name});
-                    Navigator.of(context).pop();
+                    if (context.mounted) Navigator.of(context).pop();
                   } catch (e) {
                     // Handle error
                   }
@@ -133,7 +133,7 @@ class TownshipsTab extends StatelessWidget {
                 if (name.isNotEmpty) {
                   try {
                     await townshipDoc.reference.update({'name': name});
-                    Navigator.of(context).pop();
+                    if (context.mounted) Navigator.of(context).pop();
                   } catch (e) {
                     // Handle error
                   }
@@ -165,7 +165,7 @@ class TownshipsTab extends StatelessWidget {
               onPressed: () async {
                 try {
                   await townshipDoc.reference.delete();
-                  Navigator.of(context).pop();
+                  if (context.mounted) Navigator.of(context).pop();
                 } catch (e) {
                   // Handle error
                 }

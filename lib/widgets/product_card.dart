@@ -1,5 +1,3 @@
-
-import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:myapp/providers/cart_provider.dart';
@@ -16,13 +14,12 @@ class ProductCard extends StatelessWidget {
     final cart = Provider.of<CartProvider>(context, listen: false);
     final theme = Theme.of(context);
 
-    // Using the strict data model with 'imageUrl'
     final productData = product.data() as Map<String, dynamic>;
 
     final imageUrl = productData['imageUrl'] as String?;
     final name = productData['name'] as String? ?? 'No Name';
     final price = (productData['price'] ?? 0).toDouble();
-
+    
     return GestureDetector(
       onTap: () {
         Navigator.of(context).push(
@@ -42,8 +39,8 @@ class ProductCard extends StatelessWidget {
               child: Container(
                 color: Colors.grey[200],
                 child: imageUrl != null && imageUrl.isNotEmpty
-                    ? Image.memory(
-                        base64Decode(imageUrl),
+                    ? Image.network(
+                        imageUrl,
                         fit: BoxFit.cover,
                         errorBuilder: (context, error, stackTrace) {
                           return const Center(

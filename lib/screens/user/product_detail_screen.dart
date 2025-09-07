@@ -11,10 +11,10 @@ class ProductDetailScreen extends StatefulWidget {
   const ProductDetailScreen({super.key, required this.product});
 
   @override
-  _ProductDetailScreenState createState() => _ProductDetailScreenState();
+  ProductDetailScreenState createState() => ProductDetailScreenState();
 }
 
-class _ProductDetailScreenState extends State<ProductDetailScreen> {
+class ProductDetailScreenState extends State<ProductDetailScreen> {
   int _selectedQuantity = 1;
 
   void _incrementQuantity(int availableQuantity) {
@@ -159,7 +159,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                           duration: const Duration(seconds: 2),
                         ),
                       );
-                      Navigator.of(context).pop();
+                      if (mounted) {
+                        Navigator.of(context).pop();
+                      }
                     } : null, // Disable button if out of stock
                     icon: const Icon(Icons.add_shopping_cart),
                     label: const Text('Add to Cart'),

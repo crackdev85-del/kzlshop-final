@@ -33,7 +33,7 @@ class UsersTab extends StatelessWidget {
                     .collection(usersCollectionPath)
                     .doc(userDoc.id)
                     .update({'role': roleController.text});
-                Navigator.of(context).pop();
+                if (context.mounted) Navigator.of(context).pop();
               },
             ),
           ],
