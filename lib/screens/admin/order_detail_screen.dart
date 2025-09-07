@@ -41,7 +41,8 @@ class OrderDetailScreenState extends State<OrderDetailScreen> {
           }
 
           final orderData = snapshot.data!.data() as Map<String, dynamic>;
-          _currentStatus ??= orderData['status'] ?? 'pending';
+          // Set _currentStatus only if it's null, to avoid overriding user selection
+          _currentStatus ??= orderData['status'] as String? ?? 'pending';
           final List<dynamic> items = orderData['items'] ?? [];
           final Timestamp timestamp = orderData['createdAt'];
           final String formattedDate =
@@ -122,7 +123,7 @@ class OrderDetailScreenState extends State<OrderDetailScreen> {
           children: [
             Expanded(
               child: DropdownButtonFormField<String>(
-                value: _currentStatus,
+                initialValue: _currentStatus,
                 decoration: const InputDecoration(
                   border: OutlineInputBorder(),
                   contentPadding: EdgeInsets.symmetric(horizontal: 12),
