@@ -1,6 +1,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:myapp/screens/register_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -11,7 +12,7 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final _emailController = TextEditingController();
+  final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
@@ -22,8 +23,22 @@ class _LoginScreenState extends State<LoginScreen> {
         _isLoading = true;
       });
       try {
+        // Get the email from the username
+        final userQuery = await FirebaseFirestore.instance
+            .collection('users')
+            .where('username', isEqualTo: _usernameController.text)
+            .limit(1)
+            .get();
+
+        if (userQuery.docs.isEmpty) {
+          throw FirebaseAuthException(
+              code: 'user-not-found', message: 'User not found');
+        }
+
+        final email = userQuery.docs.first.data()['email'];
+
         await FirebaseAuth.instance.signInWithEmailAndPassword(
-          email: _emailController.text,
+          email: email,
           password: _passwordController.text,
         );
       } on FirebaseAuthException catch (e) {
@@ -57,13 +72,13 @@ class _LoginScreenState extends State<LoginScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 TextFormField(
-                  controller: _emailController,
+                  controller: _usernameController,
                   decoration: const InputDecoration(
-                    labelText: 'Email',
+                    labelText: 'Username',
                     border: OutlineInputBorder(),
                   ),
                   validator: (value) =>
-                      value!.isEmpty ? 'Please enter your email' : null,
+                      value!.isEmpty ? 'Please enter your username' : null,
                 ),
                 const SizedBox(height: 16),
                 TextFormField(

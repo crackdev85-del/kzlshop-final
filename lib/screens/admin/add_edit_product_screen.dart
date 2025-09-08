@@ -288,7 +288,7 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
                     _isFetchingCategories
                         ? const Center(child: CircularProgressIndicator())
                         : DropdownButtonFormField<String>(
-                            value: _selectedCategoryId,
+                            initialValue: _selectedCategoryId,
                             decoration: const InputDecoration(
                               labelText: 'Category',
                               border: OutlineInputBorder(),

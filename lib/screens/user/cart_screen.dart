@@ -1,5 +1,4 @@
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:myapp/providers/cart_provider.dart';
 import 'package:myapp/providers/order_provider.dart';
@@ -14,7 +13,7 @@ class CartScreen extends StatelessWidget {
     final cart = Provider.of<CartProvider>(context);
     final theme = Theme.of(context);
 
-    void _showRemoveConfirmationDialog(String productId) {
+    void showRemoveConfirmationDialog(String productId) {
       showDialog(
         context: context,
         builder: (ctx) => AlertDialog(
@@ -114,7 +113,7 @@ class CartScreen extends StatelessWidget {
                       child: Padding(
                         padding: const EdgeInsets.all(5),
                         child: FittedBox(
-                          child: Text('${cartItem.price.toStringAsFixed(0)}'),
+                          child: Text(cartItem.price.toStringAsFixed(0)),
                         ),
                       ),
                     ),
@@ -126,7 +125,7 @@ class CartScreen extends StatelessWidget {
                         Text('${cartItem.quantity} x'),
                         IconButton(
                           icon: const Icon(Icons.delete_outline, color: Colors.red),
-                          onPressed: () => _showRemoveConfirmationDialog(productId),
+                          onPressed: () => showRemoveConfirmationDialog(productId),
                         ),
                       ],
                     ),

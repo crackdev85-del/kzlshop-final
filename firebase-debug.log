@@ -1,0 +1,207 @@
+[debug] [2025-09-08T17:50:58.882Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2025-09-08T17:50:58.899Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2025-09-08T17:50:58.901Z] No OAuth tokens found
+[debug] [2025-09-08T17:50:58.901Z] No OAuth tokens found
+[debug] [2025-09-08T17:50:58.902Z] No OAuth tokens found
+[debug] [2025-09-08T17:50:58.902Z] No OAuth tokens found
+[debug] [2025-09-08T17:50:58.903Z] No OAuth tokens found
+[debug] [2025-09-08T17:50:58.903Z] No OAuth tokens found
+[debug] [2025-09-08T17:50:58.903Z] No OAuth tokens found
+[debug] [2025-09-08T17:50:58.903Z] No OAuth tokens found
+[debug] [2025-09-08T17:50:58.904Z] No OAuth tokens found
+[debug] [2025-09-08T17:50:58.904Z] No OAuth tokens found
+[debug] [2025-09-08T17:50:58.904Z] No OAuth tokens found
+[debug] [2025-09-08T17:50:58.905Z] No OAuth tokens found
+[debug] [2025-09-08T17:50:58.905Z] No OAuth tokens found
+[debug] [2025-09-08T17:50:58.905Z] No OAuth tokens found
+[debug] [2025-09-08T17:50:58.919Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2025-09-08T17:50:58.921Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2025-09-08T17:50:58.921Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-09-08T17:52:41.866Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2025-09-08T17:52:41.877Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2025-09-08T17:52:41.880Z] No OAuth tokens found
+[debug] [2025-09-08T17:52:41.880Z] No OAuth tokens found
+[debug] [2025-09-08T17:52:41.881Z] No OAuth tokens found
+[debug] [2025-09-08T17:52:41.882Z] No OAuth tokens found
+[debug] [2025-09-08T17:52:41.882Z] No OAuth tokens found
+[debug] [2025-09-08T17:52:41.882Z] No OAuth tokens found
+[debug] [2025-09-08T17:52:41.883Z] No OAuth tokens found
+[debug] [2025-09-08T17:52:41.883Z] No OAuth tokens found
+[debug] [2025-09-08T17:52:41.884Z] No OAuth tokens found
+[debug] [2025-09-08T17:52:41.884Z] No OAuth tokens found
+[debug] [2025-09-08T17:52:41.885Z] No OAuth tokens found
+[debug] [2025-09-08T17:52:41.885Z] No OAuth tokens found
+[debug] [2025-09-08T17:52:41.885Z] No OAuth tokens found
+[debug] [2025-09-08T17:52:41.885Z] No OAuth tokens found
+[debug] [2025-09-08T17:52:41.919Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2025-09-08T17:52:41.925Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2025-09-08T17:52:41.929Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-09-08T18:09:37.225Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2025-09-08T18:09:37.263Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2025-09-08T18:09:37.265Z] No OAuth tokens found
+[debug] [2025-09-08T18:09:37.265Z] No OAuth tokens found
+[debug] [2025-09-08T18:09:37.266Z] No OAuth tokens found
+[debug] [2025-09-08T18:09:37.266Z] No OAuth tokens found
+[debug] [2025-09-08T18:09:37.267Z] No OAuth tokens found
+[debug] [2025-09-08T18:09:37.267Z] No OAuth tokens found
+[debug] [2025-09-08T18:09:37.267Z] No OAuth tokens found
+[debug] [2025-09-08T18:09:37.268Z] No OAuth tokens found
+[debug] [2025-09-08T18:09:37.268Z] No OAuth tokens found
+[debug] [2025-09-08T18:09:37.268Z] No OAuth tokens found
+[debug] [2025-09-08T18:09:37.268Z] No OAuth tokens found
+[debug] [2025-09-08T18:09:37.269Z] No OAuth tokens found
+[debug] [2025-09-08T18:09:37.269Z] No OAuth tokens found
+[debug] [2025-09-08T18:09:37.269Z] No OAuth tokens found
+[debug] [2025-09-08T18:09:37.286Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2025-09-08T18:09:37.288Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2025-09-08T18:09:37.289Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-09-08T18:26:33.599Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2025-09-08T18:26:33.646Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2025-09-08T18:26:33.649Z] No OAuth tokens found
+[debug] [2025-09-08T18:26:33.650Z] No OAuth tokens found
+[debug] [2025-09-08T18:26:33.651Z] No OAuth tokens found
+[debug] [2025-09-08T18:26:33.651Z] No OAuth tokens found
+[debug] [2025-09-08T18:26:33.652Z] No OAuth tokens found
+[debug] [2025-09-08T18:26:33.652Z] No OAuth tokens found
+[debug] [2025-09-08T18:26:33.653Z] No OAuth tokens found
+[debug] [2025-09-08T18:26:33.654Z] No OAuth tokens found
+[debug] [2025-09-08T18:26:33.655Z] No OAuth tokens found
+[debug] [2025-09-08T18:26:33.655Z] No OAuth tokens found
+[debug] [2025-09-08T18:26:33.656Z] No OAuth tokens found
+[debug] [2025-09-08T18:26:33.656Z] No OAuth tokens found
+[debug] [2025-09-08T18:26:33.657Z] No OAuth tokens found
+[debug] [2025-09-08T18:26:33.657Z] No OAuth tokens found
+[debug] [2025-09-08T18:26:33.702Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2025-09-08T18:26:33.705Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2025-09-08T18:26:33.706Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-09-08T18:27:09.200Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2025-09-08T18:27:09.221Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2025-09-08T18:27:09.225Z] No OAuth tokens found
+[debug] [2025-09-08T18:27:09.225Z] No OAuth tokens found
+[debug] [2025-09-08T18:27:09.227Z] No OAuth tokens found
+[debug] [2025-09-08T18:27:09.229Z] No OAuth tokens found
+[debug] [2025-09-08T18:27:09.229Z] No OAuth tokens found
+[debug] [2025-09-08T18:27:09.230Z] No OAuth tokens found
+[debug] [2025-09-08T18:27:09.230Z] No OAuth tokens found
+[debug] [2025-09-08T18:27:09.231Z] No OAuth tokens found
+[debug] [2025-09-08T18:27:09.231Z] No OAuth tokens found
+[debug] [2025-09-08T18:27:09.231Z] No OAuth tokens found
+[debug] [2025-09-08T18:27:09.234Z] No OAuth tokens found
+[debug] [2025-09-08T18:27:09.234Z] No OAuth tokens found
+[debug] [2025-09-08T18:27:09.235Z] No OAuth tokens found
+[debug] [2025-09-08T18:27:09.235Z] No OAuth tokens found
+[debug] [2025-09-08T18:27:09.283Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2025-09-08T18:27:09.293Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2025-09-08T18:27:09.294Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-09-08T18:27:10.114Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2025-09-08T18:27:10.124Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2025-09-08T18:27:10.128Z] No OAuth tokens found
+[debug] [2025-09-08T18:27:10.128Z] No OAuth tokens found
+[debug] [2025-09-08T18:27:10.129Z] No OAuth tokens found
+[debug] [2025-09-08T18:27:10.130Z] No OAuth tokens found
+[debug] [2025-09-08T18:27:10.130Z] No OAuth tokens found
+[debug] [2025-09-08T18:27:10.130Z] No OAuth tokens found
+[debug] [2025-09-08T18:27:10.131Z] No OAuth tokens found
+[debug] [2025-09-08T18:27:10.131Z] No OAuth tokens found
+[debug] [2025-09-08T18:27:10.131Z] No OAuth tokens found
+[debug] [2025-09-08T18:27:10.131Z] No OAuth tokens found
+[debug] [2025-09-08T18:27:10.132Z] No OAuth tokens found
+[debug] [2025-09-08T18:27:10.132Z] No OAuth tokens found
+[debug] [2025-09-08T18:27:10.132Z] No OAuth tokens found
+[debug] [2025-09-08T18:27:10.133Z] No OAuth tokens found
+[debug] [2025-09-08T18:27:10.178Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2025-09-08T18:27:10.180Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2025-09-08T18:27:10.181Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-09-08T18:31:20.182Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2025-09-08T18:31:20.234Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2025-09-08T18:31:20.236Z] No OAuth tokens found
+[debug] [2025-09-08T18:31:20.236Z] No OAuth tokens found
+[debug] [2025-09-08T18:31:20.237Z] No OAuth tokens found
+[debug] [2025-09-08T18:31:20.237Z] No OAuth tokens found
+[debug] [2025-09-08T18:31:20.238Z] No OAuth tokens found
+[debug] [2025-09-08T18:31:20.238Z] No OAuth tokens found
+[debug] [2025-09-08T18:31:20.238Z] No OAuth tokens found
+[debug] [2025-09-08T18:31:20.239Z] No OAuth tokens found
+[debug] [2025-09-08T18:31:20.239Z] No OAuth tokens found
+[debug] [2025-09-08T18:31:20.239Z] No OAuth tokens found
+[debug] [2025-09-08T18:31:20.240Z] No OAuth tokens found
+[debug] [2025-09-08T18:31:20.240Z] No OAuth tokens found
+[debug] [2025-09-08T18:31:20.240Z] No OAuth tokens found
+[debug] [2025-09-08T18:31:20.241Z] No OAuth tokens found
+[debug] [2025-09-08T18:31:20.262Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2025-09-08T18:31:20.264Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2025-09-08T18:31:20.264Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-09-08T18:31:37.561Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2025-09-08T18:31:37.573Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2025-09-08T18:31:37.578Z] No OAuth tokens found
+[debug] [2025-09-08T18:31:37.579Z] No OAuth tokens found
+[debug] [2025-09-08T18:31:37.580Z] No OAuth tokens found
+[debug] [2025-09-08T18:31:37.580Z] No OAuth tokens found
+[debug] [2025-09-08T18:31:37.581Z] No OAuth tokens found
+[debug] [2025-09-08T18:31:37.582Z] No OAuth tokens found
+[debug] [2025-09-08T18:31:37.585Z] No OAuth tokens found
+[debug] [2025-09-08T18:31:37.586Z] No OAuth tokens found
+[debug] [2025-09-08T18:31:37.586Z] No OAuth tokens found
+[debug] [2025-09-08T18:31:37.587Z] No OAuth tokens found
+[debug] [2025-09-08T18:31:37.587Z] No OAuth tokens found
+[debug] [2025-09-08T18:31:37.588Z] No OAuth tokens found
+[debug] [2025-09-08T18:31:37.588Z] No OAuth tokens found
+[debug] [2025-09-08T18:31:37.589Z] No OAuth tokens found
+[debug] [2025-09-08T18:31:37.615Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2025-09-08T18:31:37.620Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2025-09-08T18:31:37.621Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
+[debug] [2025-09-08T18:35:26.091Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2025-09-08T18:35:26.102Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2025-09-08T18:35:26.105Z] No OAuth tokens found
+[debug] [2025-09-08T18:35:26.106Z] No OAuth tokens found
+[debug] [2025-09-08T18:35:26.106Z] No OAuth tokens found
+[debug] [2025-09-08T18:35:26.107Z] No OAuth tokens found
+[debug] [2025-09-08T18:35:26.107Z] No OAuth tokens found
+[debug] [2025-09-08T18:35:26.108Z] No OAuth tokens found
+[debug] [2025-09-08T18:35:26.108Z] No OAuth tokens found
+[debug] [2025-09-08T18:35:26.108Z] No OAuth tokens found
+[debug] [2025-09-08T18:35:26.108Z] No OAuth tokens found
+[debug] [2025-09-08T18:35:26.109Z] No OAuth tokens found
+[debug] [2025-09-08T18:35:26.109Z] No OAuth tokens found
+[debug] [2025-09-08T18:35:26.109Z] No OAuth tokens found
+[debug] [2025-09-08T18:35:26.110Z] No OAuth tokens found
+[debug] [2025-09-08T18:35:26.110Z] No OAuth tokens found
+[debug] [2025-09-08T18:35:26.131Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2025-09-08T18:35:26.133Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"flutter"}
+[error] Failed to fetch Firebase Project from Studio Workspace because WORKSPACE_SLUG environment variable is empty
+[debug] [2025-09-08T18:35:26.135Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/userinfo.email"]
