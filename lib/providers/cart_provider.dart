@@ -1,22 +1,23 @@
-
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+// Represents a single item in the shopping cart
 class CartItem {
   final String id; // Product ID
   final String name;
   final int quantity;
   final double price;
-  final QueryDocumentSnapshot product; // Changed from 'dynamic'
+  final DocumentSnapshot? product; // Made nullable
 
   CartItem({
     required this.id,
     required this.name,
     required this.quantity,
     required this.price,
-    required this.product,
+    this.product, // No longer required
   });
 
+  // Method to create a copy with updated values
   CartItem copyWith({
     int? quantity,
   }) {
@@ -25,11 +26,12 @@ class CartItem {
       name: name,
       quantity: quantity ?? this.quantity,
       price: price,
-      product: product,
+      product: product, 
     );
   }
 }
 
+// Manages the state of the shopping cart
 class CartProvider with ChangeNotifier {
   Map<String, CartItem> _items = {};
 
@@ -49,14 +51,12 @@ class CartProvider with ChangeNotifier {
     return total;
   }
 
-  void addItem(QueryDocumentSnapshot product, {int quantity = 1}) {
-    final productId = product.id;
+  void addItem(DocumentSnapshot product, {int quantity = 1}) {
     final productData = product.data() as Map<String, dynamic>;
-
-    if (_items.containsKey(productId)) {
+    if (_items.containsKey(product.id)) {
       // Change quantity...
       _items.update(
-        productId,
+        product.id,
         (existingCartItem) => existingCartItem.copyWith(
           quantity: existingCartItem.quantity + quantity,
         ),
@@ -64,13 +64,13 @@ class CartProvider with ChangeNotifier {
     } else {
       // Add a new item...
       _items.putIfAbsent(
-        productId,
+        product.id,
         () => CartItem(
-          id: productId,
-          name: productData['name'] ?? 'No Name',
-          price: (productData['price'] ?? 0.0).toDouble(),
+          id: product.id,
+          name: productData['name'],
+          price: (productData['price'] as num).toDouble(),
           quantity: quantity,
-          product: product, // Pass the full product snapshot
+          product: product, // Assign the snapshot here
         ),
       );
     }
@@ -88,10 +88,11 @@ class CartProvider with ChangeNotifier {
     }
     if (_items[productId]!.quantity > 1) {
       _items.update(
-          productId,
-          (existingCartItem) => existingCartItem.copyWith(
-                quantity: existingCartItem.quantity - 1,
-              ));
+        productId,
+        (existingCartItem) => existingCartItem.copyWith(
+          quantity: existingCartItem.quantity - 1,
+        ),
+      );
     } else {
       _items.remove(productId);
     }

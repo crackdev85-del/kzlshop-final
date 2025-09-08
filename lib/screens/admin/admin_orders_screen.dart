@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
@@ -5,37 +6,42 @@ import 'package:myapp/constants.dart';
 import 'package:myapp/providers/order_provider.dart';
 import 'package:provider/provider.dart';
 
-class OrdersTab extends StatelessWidget {
-  const OrdersTab({super.key});
+class AdminOrdersScreen extends StatelessWidget {
+  const AdminOrdersScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<QuerySnapshot>(
-      stream: FirebaseFirestore.instance
-          .collection(ordersCollectionPath)
-          .orderBy('dateTime', descending: true)
-          .snapshots(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        if (snapshot.hasError) {
-          return Center(child: Text('Something went wrong: ${snapshot.error}'));
-        }
-        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-          return const Center(child: Text('No orders found.'));
-        }
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Manage Orders'),
+      ),
+      body: StreamBuilder<QuerySnapshot>(
+        stream: FirebaseFirestore.instance
+            .collection(ordersCollectionPath)
+            .orderBy('dateTime', descending: true)
+            .snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (snapshot.hasError) {
+            return Center(child: Text('Something went wrong: ${snapshot.error}'));
+          }
+          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+            return const Center(child: Text('No orders found.'));
+          }
 
-        final orderDocs = snapshot.data!.docs;
+          final orderDocs = snapshot.data!.docs;
 
-        return ListView.builder(
-          padding: const EdgeInsets.all(8.0),
-          itemCount: orderDocs.length,
-          itemBuilder: (context, index) {
-            return AdminOrderCard(orderSnapshot: orderDocs[index]);
-          },
-        );
-      },
+          return ListView.builder(
+            padding: const EdgeInsets.all(8.0),
+            itemCount: orderDocs.length,
+            itemBuilder: (context, index) {
+              return AdminOrderCard(orderSnapshot: orderDocs[index]);
+            },
+          );
+        },
+      ),
     );
   }
 }

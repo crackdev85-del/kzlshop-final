@@ -7,6 +7,8 @@ import 'package:provider/provider.dart';
 import 'package:myapp/firebase_options.dart';
 import 'package:myapp/widgets/auth_wrapper.dart';
 import 'package:myapp/providers/cart_provider.dart';
+import 'package:myapp/providers/order_provider.dart'; 
+import 'package:myapp/screens/user/my_orders_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -18,6 +20,7 @@ void main() async {
       providers: [
         ChangeNotifierProvider(create: (context) => ThemeProvider()),
         ChangeNotifierProvider(create: (context) => CartProvider()),
+        ChangeNotifierProvider(create: (context) => OrderProvider()), 
       ],
       child: const MyApp(),
     ),
@@ -25,7 +28,7 @@ void main() async {
 }
 
 class ThemeProvider with ChangeNotifier {
-  ThemeMode _themeMode = ThemeMode.light; // Default to light theme
+  ThemeMode _themeMode = ThemeMode.light; 
 
   ThemeMode get themeMode => _themeMode;
 
@@ -59,23 +62,23 @@ class MyApp extends StatelessWidget {
     // --- Light Theme --- 
     final ThemeData lightTheme = ThemeData(
       useMaterial3: true,
-      scaffoldBackgroundColor: babyPink, // Set background to Baby Pink
+      scaffoldBackgroundColor: babyPink, 
       colorScheme: ColorScheme.fromSeed(
-        seedColor: skyBlue, // Primary color scheme seed
+        seedColor: skyBlue, 
         brightness: Brightness.light,
         primary: skyBlue,
         secondary: pink, 
       ),
       textTheme: appTextTheme,
       appBarTheme: AppBarTheme(
-        backgroundColor: skyBlue, // App Bar to Sky Blue
-        foregroundColor: Colors.black, // Text/Icons on App Bar
+        backgroundColor: skyBlue, 
+        foregroundColor: Colors.black, 
         titleTextStyle: GoogleFonts.oswald(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          foregroundColor: Colors.white, // Text on buttons
-          backgroundColor: pink, // Buttons to Pink
+          foregroundColor: Colors.white, 
+          backgroundColor: pink, 
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
           textStyle: GoogleFonts.roboto(fontSize: 16, fontWeight: FontWeight.w500),
@@ -86,7 +89,7 @@ class MyApp extends StatelessWidget {
     // --- Dark Theme --- 
     final ThemeData darkTheme = ThemeData(
       useMaterial3: true,
-      scaffoldBackgroundColor: Colors.grey[900], // Dark background
+      scaffoldBackgroundColor: Colors.grey[900], 
       colorScheme: ColorScheme.fromSeed(
         seedColor: skyBlue,
         brightness: Brightness.dark,
@@ -95,14 +98,14 @@ class MyApp extends StatelessWidget {
       ),
       textTheme: appTextTheme.apply(bodyColor: Colors.white, displayColor: Colors.white),
       appBarTheme: AppBarTheme(
-        backgroundColor: Colors.grey[850], // Darker App Bar
+        backgroundColor: Colors.grey[850], 
         foregroundColor: Colors.white,
         titleTextStyle: GoogleFonts.oswald(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           foregroundColor: Colors.white,
-          backgroundColor: pink, // Keep buttons pink for contrast
+          backgroundColor: pink, 
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
           textStyle: GoogleFonts.roboto(fontSize: 16, fontWeight: FontWeight.w500),
@@ -118,6 +121,9 @@ class MyApp extends StatelessWidget {
           darkTheme: darkTheme,
           themeMode: themeProvider.themeMode,
           home: const AuthWrapper(),
+          routes: {
+            MyOrdersScreen.routeName: (ctx) => const MyOrdersScreen(),
+          }, // Add this routes map
         );
       },
     );

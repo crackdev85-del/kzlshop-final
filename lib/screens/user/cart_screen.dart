@@ -67,24 +67,7 @@ class CartScreen extends StatelessWidget {
                     ),
                     backgroundColor: theme.primaryColor,
                   ),
-                  TextButton(
-                    onPressed: (cart.totalAmount <= 0)
-                        ? null
-                        : () {
-                            Provider.of<OrderProvider>(context, listen: false).addOrder(
-                              cart.items.values.toList(),
-                              cart.totalAmount,
-                            );
-                            cart.clearCart(); // Corrected this line
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Order placed successfully!'),
-                                duration: Duration(seconds: 2),
-                              ),
-                            );
-                          },
-                    child: const Text('ORDER NOW'),
-                  )
+                  OrderButton(cart: cart), // Extracted to a new widget
                 ],
               ),
             ),
@@ -105,7 +88,7 @@ class CartScreen extends StatelessWidget {
                     onTap: () {
                        // Navigate to Product Detail Screen
                         Navigator.of(context).push(MaterialPageRoute(
-                            builder: (context) => ProductDetailScreen(product: cartItem.product),
+                            builder: (context) => ProductDetailScreen(productId: productId),
                         ));
                     },
                     leading: CircleAvatar(
@@ -136,6 +119,57 @@ class CartScreen extends StatelessWidget {
           )
         ],
       ),
+    );
+  }
+}
+
+// New StatefulWidget for the Order Button to manage its own loading state
+class OrderButton extends StatefulWidget {
+  const OrderButton({super.key, required this.cart});
+
+  final CartProvider cart;
+
+  @override
+  State<OrderButton> createState() => _OrderButtonState();
+}
+
+class _OrderButtonState extends State<OrderButton> {
+  bool _isLoading = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return TextButton(
+      onPressed: (widget.cart.totalAmount <= 0 || _isLoading)
+          ? null
+          : () async {
+              setState(() {
+                _isLoading = true;
+              });
+              try {
+                await Provider.of<OrderProvider>(context, listen: false).addOrder(
+                  widget.cart.items.values.toList(),
+                  widget.cart.totalAmount,
+                );
+                widget.cart.clearCart();
+                ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('သင် မှာယူပြီးပါပြီ ကျွန်တော်တို့လက်ခံပေးပါမယ် ခေတ္တစောင့်ဆိုင်းပေးပါနော်'),
+                    duration: Duration(seconds: 3),
+                  ),
+                );
+              } catch (error) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Ordering failed! Please try again later.'),
+                  ),
+                );
+              }
+              setState(() {
+                _isLoading = false;
+              });
+            },
+      child: _isLoading ? const CircularProgressIndicator() : const Text('ORDER NOW'),
     );
   }
 }

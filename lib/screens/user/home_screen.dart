@@ -1,12 +1,14 @@
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:myapp/constants.dart';
+import 'package:myapp/providers/cart_provider.dart';
 import 'package:myapp/screens/admin/admin_home_screen.dart';
 import 'package:myapp/screens/user/cart_screen.dart';
+import 'package:myapp/screens/user/my_orders_screen.dart'; // Import MyOrdersScreen
 import 'package:myapp/screens/user/profile_screen.dart';
 import 'package:myapp/widgets/product_card.dart';
+import 'package:provider/provider.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -38,7 +40,6 @@ class _HomeScreenState extends State<HomeScreen> {
           });
         }
       } catch (e) {
-        // Handle potential errors, e.g., permission denied
         debugPrint('Error getting user role: $e');
       }
     }
@@ -49,9 +50,12 @@ class _HomeScreenState extends State<HomeScreen> {
     final theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: Text(_userRole == 'admin' ? 'Admin Panel' : 'Foodie',
-            style: theme.textTheme.titleLarge
-                ?.copyWith(color: theme.colorScheme.onPrimary)),
+        title: Text(
+          _userRole == 'admin' ? 'Admin Panel' : 'KZL Shop',
+          style: theme.textTheme.titleLarge?.copyWith(
+            color: theme.colorScheme.onPrimary,
+          ),
+        ),
         actions: [
           if (_userRole == 'admin')
             IconButton(
@@ -61,19 +65,37 @@ class _HomeScreenState extends State<HomeScreen> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (context) => const AdminHomeScreen()),
+                    builder: (context) => const AdminHomeScreen(),
+                  ),
                 );
               },
             ),
+          // My Orders Button
           IconButton(
-            tooltip: 'My Cart',
-            icon: const Icon(Icons.shopping_cart),
+            tooltip: 'My Orders',
+            icon: const Icon(Icons.receipt_long),
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const CartScreen()),
+                MaterialPageRoute(builder: (context) => const MyOrdersScreen()),
               );
             },
+          ),
+          Consumer<CartProvider>(
+            builder: (context, cart, child) => Badge(
+              label: Text(cart.itemCount.toString()),
+              isLabelVisible: cart.itemCount > 0,
+              child: IconButton(
+                tooltip: 'My Cart',
+                icon: const Icon(Icons.shopping_cart),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const CartScreen()),
+                  );
+                },
+              ),
+            ),
           ),
           IconButton(
             tooltip: 'My Profile',
@@ -94,8 +116,11 @@ class _HomeScreenState extends State<HomeScreen> {
         builder: (context, snapshot) {
           if (snapshot.hasError) {
             return Center(
-                child: Text('Something went wrong',
-                    style: theme.textTheme.bodyMedium));
+              child: Text(
+                'Something went wrong',
+                style: theme.textTheme.bodyMedium,
+              ),
+            );
           }
 
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -104,8 +129,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
           if (snapshot.data!.docs.isEmpty) {
             return Center(
-                child: Text('No products available right now.',
-                    style: theme.textTheme.bodyMedium));
+              child: Text(
+                'No products available right now.',
+                style: theme.textTheme.bodyMedium,
+              ),
+            );
           }
 
           return GridView.builder(

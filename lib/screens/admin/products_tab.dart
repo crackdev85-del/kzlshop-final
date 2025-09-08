@@ -1,4 +1,3 @@
-
 import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -10,6 +9,8 @@ class ProductsTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
       floatingActionButton: FloatingActionButton(
         onPressed: () {
@@ -24,7 +25,10 @@ class ProductsTab extends StatelessWidget {
         child: const Icon(Icons.add),
       ),
       body: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance.collection(productsCollectionPath).orderBy('name').snapshots(),
+        stream: FirebaseFirestore.instance
+            .collection(productsCollectionPath)
+            .orderBy(Constants.productName)
+            .snapshots(),
         builder: (context, snapshot) {
           if (snapshot.hasError) {
             return const Center(child: Text('Something went wrong'));
@@ -35,83 +39,129 @@ class ProductsTab extends StatelessWidget {
           }
 
           if (snapshot.data!.docs.isEmpty) {
-            return const Center(child: Text('No products found. Add one!'));
+            return const Center(
+              child: Text('No products found. Tap + to add one!'),
+            );
           }
 
-          return ListView.builder(
+          return GridView.builder(
+            padding: const EdgeInsets.all(12.0),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              crossAxisSpacing: 12.0,
+              mainAxisSpacing: 12.0,
+              childAspectRatio: 0.7, // Adjust for better layout
+            ),
             itemCount: snapshot.data!.docs.length,
             itemBuilder: (context, index) {
               final productDoc = snapshot.data!.docs[index];
               final productData = productDoc.data() as Map<String, dynamic>;
 
-              final String name = productData['name'] ?? 'No Name';
-              final String imageUrl = productData['imageUrl'] ?? '';
-              final double price = (productData['price'] ?? 0.0).toDouble();
+              final String name = productData[Constants.productName] ?? 'No Name';
+              final String imageUrl = productData[Constants.productImageUrl] ?? '';
+              final double price = (productData[Constants.productPrice] ?? 0.0).toDouble();
+              final int quantity = (productData[Constants.productQuantity] ?? 0) as int;
 
               return Card(
-                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                child: ListTile(
-                  leading: imageUrl.isNotEmpty
-                      ? Image.memory(
-                          base64Decode(imageUrl.split(',').last),
-                          width: 50,
-                          height: 50,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return const Icon(Icons.broken_image, size: 50);
-                          },
-                        )
-                      : const Icon(Icons.image, size: 50),
-                  title: Text(name),
-                  subtitle: Text('Price: \$${price.toStringAsFixed(2)}'),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.edit),
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => AddEditProductScreen(
-                                productId: productDoc.id,
+                elevation: 3,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                clipBehavior: Clip.antiAlias,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Expanded(
+                      child: imageUrl.isNotEmpty
+                          ? Image.memory(
+                              base64Decode(imageUrl.split(',').last),
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return const Center(
+                                    child: Icon(Icons.broken_image, color: Colors.grey, size: 40));
+                              },
+                            )
+                          : Container(
+                            color: Colors.grey[200],
+                            child: const Center(
+                                child: Icon(Icons.image, color: Colors.grey, size: 40)),
+                          ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            name,
+                            style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            '\$${price.toStringAsFixed(2)}',
+                            style: theme.textTheme.bodyLarge?.copyWith(color: theme.colorScheme.primary),
+                          ),
+                          Text(
+                            'Qty: $quantity',
+                            style: theme.textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Divider(height: 1),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        IconButton(
+                          icon: Icon(Icons.edit_outlined, color: Colors.blue[700]),
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => AddEditProductScreen(
+                                  productId: productDoc.id,
+                                ),
                               ),
-                            ),
-                          );
-                        },
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.delete, color: Colors.red),
-                        onPressed: () {
-                          showDialog(
-                            context: context,
-                            builder: (BuildContext ctx) {
-                              return AlertDialog(
-                                title: const Text('Confirm Delete'),
-                                content: Text('Are you sure you want to delete "$name"?'),
-                                actions: <Widget>[
-                                  TextButton(
-                                    onPressed: () => Navigator.of(ctx).pop(),
-                                    child: const Text('Cancel'),
-                                  ),
-                                  TextButton(
-                                    onPressed: () {
-                                      FirebaseFirestore.instance
-                                          .collection(productsCollectionPath)
-                                          .doc(productDoc.id)
-                                          .delete();
-                                      Navigator.of(ctx).pop();
-                                    },
-                                    child: const Text('Delete', style: TextStyle(color: Colors.red)),
-                                  ),
-                                ],
-                              );
-                            },
-                          );
-                        },
-                      ),
-                    ],
-                  ),
+                            );
+                          },
+                          tooltip: 'Edit',
+                        ),
+                        IconButton(
+                          icon: Icon(Icons.delete_outline, color: Colors.red[700]),
+                          onPressed: () {
+                            showDialog(
+                              context: context,
+                              builder: (BuildContext ctx) {
+                                return AlertDialog(
+                                  title: const Text('Confirm Delete'),
+                                  content: Text('Are you sure you want to delete "$name"?'),
+                                  actions: <Widget>[
+                                    TextButton(
+                                      onPressed: () => Navigator.of(ctx).pop(),
+                                      child: const Text('Cancel'),
+                                    ),
+                                    TextButton(
+                                      onPressed: () {
+                                        FirebaseFirestore.instance
+                                            .collection(productsCollectionPath)
+                                            .doc(productDoc.id)
+                                            .delete();
+                                        Navigator.of(ctx).pop();
+                                      },
+                                      child: const Text('Delete', style: TextStyle(color: Colors.red)),
+                                    ),
+                                  ],
+                                );
+                              },
+                            );
+                          },
+                          tooltip: 'Delete',
+                        ),
+                      ],
+                    )
+                  ],
                 ),
               );
             },

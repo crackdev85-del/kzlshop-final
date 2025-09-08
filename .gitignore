@@ -1,1 +1,41 @@
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.buildlog/
+.history
+.svn/
 
+# IntelliJ
+.idea/
+*.iml
+*.ipr
+
+# Visual Studio Code
+.vscode/
+
+# Flutter/Dart
+/build/
+.dart_tool/
+.packages
+.flutter-plugins
+.flutter-plugins-dependencies
+
+# Firebase
+.firebase/
+
+# Sensitive files
+# lib/firebase_options.dart
+
+# Android
+/android/app/src/main/assets/app.token
+/android/app/src/main/assets/app.identifier
+/android/key.properties
+
+# iOS
+/ios/Flutter/App.framework/flutter_assets/app.token
+/ios/Flutter/App.framework/flutter_assets/app.identifier
+/ios/Runner/GoogleService-Info.plist

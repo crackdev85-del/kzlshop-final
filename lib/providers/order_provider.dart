@@ -1,61 +1,123 @@
-
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:myapp/constants.dart';
 import 'package:myapp/providers/cart_provider.dart';
 
 class OrderItem {
   final String id;
-  final double amount;
+  final double totalAmount;
   final List<CartItem> products;
   final DateTime dateTime;
-  final String status;
+  String status;
 
   OrderItem({
     required this.id,
-    required this.amount,
+    required this.totalAmount,
     required this.products,
     required this.dateTime,
-    this.status = 'Pending',
+    this.status = 'Order Placed',
   });
 }
 
 class OrderProvider with ChangeNotifier {
-  final CollectionReference _ordersCollection = FirebaseFirestore.instance.collection('orders');
+  List<OrderItem> _orders = [];
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+
+  List<OrderItem> get orders {
+    return [..._orders];
+  }
+
+  Future<void> fetchAndSetOrders() async {
+    final user = _auth.currentUser;
+    if (user == null) return;
+
+    try {
+      final querySnapshot = await _firestore
+          .collection(ordersCollectionPath)
+          .where('userId', isEqualTo: user.uid)
+          .orderBy('dateTime', descending: true)
+          .get();
+
+      final List<OrderItem> loadedOrders = [];
+      for (var doc in querySnapshot.docs) {
+        final orderData = doc.data();
+        loadedOrders.add(
+          OrderItem(
+            id: doc.id,
+            totalAmount: orderData['totalAmount'],
+            dateTime: (orderData['dateTime'] as Timestamp).toDate(),
+            status: orderData['status'] ?? 'Order Placed',
+            products: (orderData['products'] as List<dynamic>)
+                .map((item) => CartItem(
+                      id: item['id'],
+                      name: item['name'],
+                      quantity: item['quantity'],
+                      price: item['price'],
+                      product: null,
+                    ))
+                .toList(),
+          ),
+        );
+      }
+      _orders = loadedOrders;
+      notifyListeners();
+    } catch (error) {
+      print('Error fetching orders: $error');
+    }
+  }
 
   Future<void> addOrder(List<CartItem> cartProducts, double total) async {
+    final user = _auth.currentUser;
+    if (user == null) return;
+
     final timestamp = DateTime.now();
     try {
-      final newOrderRef = await _ordersCollection.add({
-        'amount': total,
-        'dateTime': timestamp.toIso8601String(),
-        'status': 'Pending', // Initial status
+      final newOrderRef = await _firestore.collection(ordersCollectionPath).add({
+        'userId': user.uid,
+        'totalAmount': total,
+        'dateTime': Timestamp.fromDate(timestamp),
+        'status': 'Order Placed',
         'products': cartProducts
             .map((cp) => {
-                  'id': cp.product.id,
+                  'id': cp.id,
                   'name': cp.name,
                   'quantity': cp.quantity,
                   'price': cp.price,
-                  // You might not need to store the full product document again
                 })
             .toList(),
       });
 
-      // Optionally, you can reduce the stock quantity from the products collection here
-      for (var cartItem in cartProducts) {
-          final productRef = FirebaseFirestore.instance.collection('products').doc(cartItem.product.id);
-          // Use a transaction to safely update the quantity
-          await FirebaseFirestore.instance.runTransaction((transaction) async {
-              DocumentSnapshot freshSnap = await transaction.get(productRef);
-              int currentQuantity = (freshSnap.data() as Map<String, dynamic>)['quantity'] ?? 0;
-              transaction.update(productRef, {'quantity': currentQuantity - cartItem.quantity});
-          });
-      }
-
+      _orders.insert(
+        0,
+        OrderItem(
+          id: newOrderRef.id,
+          totalAmount: total,
+          products: cartProducts,
+          dateTime: timestamp,
+        ),
+      );
       notifyListeners();
     } catch (error) {
-      // It's a good practice to handle potential errors
-      print("Error placing order: $error");
-      rethrow; 
+      print('Error adding order: $error');
+      throw error;
+    }
+  }
+
+  // New function to update order status
+  Future<void> updateOrderStatus(String orderId, String newStatus) async {
+    try {
+      await _firestore
+          .collection(ordersCollectionPath)
+          .doc(orderId)
+          .update({'status': newStatus});
+      // No need to call notifyListeners() here because the Admin screen is using a StreamBuilder
+      // which will automatically reflect the changes from Firestore.
+    } catch (error) {
+      print('Error updating order status: $error');
+      // Optionally, re-throw the error to show a message in the UI
+      throw error;
     }
   }
 }

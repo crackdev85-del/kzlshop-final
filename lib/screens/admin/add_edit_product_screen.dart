@@ -1,4 +1,3 @@
-
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
@@ -29,47 +28,11 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
   String? _imageUrl;
   bool _isLoading = false;
 
-  // New variables for categories
-  String? _selectedCategoryId;
-  List<DropdownMenuItem<String>> _categoryItems = [];
-  bool _isFetchingCategories = true;
-
   @override
   void initState() {
     super.initState();
-    _fetchCategories();
     if (widget.productId != null) {
       _fetchProduct();
-    }
-  }
-
-  Future<void> _fetchCategories() async {
-    setState(() {
-      _isFetchingCategories = true;
-    });
-    try {
-      final snapshot = await FirebaseFirestore.instance.collection('categories').get();
-      final categories = snapshot.docs.map((doc) {
-        return DropdownMenuItem<String>(
-          value: doc.id,
-          child: Text(doc.data()['name'] ?? 'Unnamed Category'),
-        );
-      }).toList();
-      setState(() {
-        _categoryItems = categories;
-      });
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to fetch categories: $e')),
-        );
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isFetchingCategories = false;
-        });
-      }
     }
   }
 
@@ -78,14 +41,13 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
       _isLoading = true;
     });
     try {
-      final doc = await FirebaseFirestore.instance.collection('products').doc(widget.productId).get();
+      final doc = await FirebaseFirestore.instance.collection(productsCollectionPath).doc(widget.productId).get();
       if (doc.exists) {
         final data = doc.data()!;
         _nameController.text = data[Constants.productName] ?? '';
         _priceController.text = (data[Constants.productPrice] ?? 0).toString();
         _quantityController.text = (data[Constants.productQuantity] ?? 0).toString();
         _descriptionController.text = data[Constants.productDescription] ?? '';
-        _selectedCategoryId = data[Constants.productCategoryId];
 
         if (data[Constants.productImageUrl] != null) {
           setState(() {
@@ -150,12 +112,6 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
     if (!_formKey.currentState!.validate()) {
       return;
     }
-     if (_selectedCategoryId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select a category.')),
-      );
-      return;
-    }
     if (_imageFile == null && _imageUrl == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please select an image for the product.')),
@@ -183,14 +139,13 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
         Constants.productQuantity: int.tryParse(_quantityController.text) ?? 0,
         Constants.productDescription: _descriptionController.text,
         Constants.productImageUrl: finalImageUrl,
-        Constants.productCategoryId: _selectedCategoryId, // Add categoryId
         'createdAt': FieldValue.serverTimestamp(),
       };
 
       if (widget.productId == null) {
-        await FirebaseFirestore.instance.collection('products').add(productData);
+        await FirebaseFirestore.instance.collection(productsCollectionPath).add(productData);
       } else {
-        await FirebaseFirestore.instance.collection('products').doc(widget.productId).update(productData);
+        await FirebaseFirestore.instance.collection(productsCollectionPath).doc(widget.productId).update(productData);
       }
 
       if (mounted) {
@@ -226,7 +181,7 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
       appBar: AppBar(
         title: Text(widget.productId == null ? 'Add Product' : 'Edit Product'),
         actions: [
-          if (_isLoading || _isFetchingCategories)
+          if (_isLoading)
             const Padding(
               padding: EdgeInsets.all(12.0),
               child: SizedBox(height: 24, width: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 3)),
@@ -283,24 +238,6 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
                       decoration: const InputDecoration(labelText: 'Product Name', border: OutlineInputBorder()),
                       validator: (value) => value == null || value.isEmpty ? 'Please enter a name' : null,
                     ),
-                    const SizedBox(height: 16),
-                    // Category Dropdown
-                    _isFetchingCategories
-                        ? const Center(child: CircularProgressIndicator())
-                        : DropdownButtonFormField<String>(
-                            initialValue: _selectedCategoryId,
-                            decoration: const InputDecoration(
-                              labelText: 'Category',
-                              border: OutlineInputBorder(),
-                            ),
-                            items: _categoryItems,
-                            onChanged: (value) {
-                              setState(() {
-                                _selectedCategoryId = value;
-                              });
-                            },
-                            validator: (value) => value == null ? 'Please select a category' : null,
-                          ),
                     const SizedBox(height: 16),
                     Row(
                       children: [

@@ -25,7 +25,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Future<void> _getUserRole() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
-      final doc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+      final doc = await FirebaseFirestore.instance.collection('usersCollectionPath').doc(user.uid).get();
       if (doc.exists && mounted) {
         setState(() {
           _userRole = doc.data()!['role'];

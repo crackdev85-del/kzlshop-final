@@ -1,0 +1,1 @@
+firebase appdistribution:distribute build/app/outputs/flutter-apk/app-release.apk --app 1:405459867937:android:cded0bb72983e2d9420660 --testers "chawkuu@gmail.com"
