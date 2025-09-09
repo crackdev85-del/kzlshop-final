@@ -1,10 +1,11 @@
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:myapp/constants.dart';
 import 'package:myapp/main.dart';
 import 'package:myapp/screens/admin/admin_home_screen.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -15,22 +16,47 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   String? _userRole;
+  String? _userAddress;
 
   @override
   void initState() {
     super.initState();
-    _getUserRole();
+    _getUserData();
   }
 
-  Future<void> _getUserRole() async {
+  Future<void> _getUserData() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
-      final doc = await FirebaseFirestore.instance.collection('usersCollectionPath').doc(user.uid).get();
-      if (doc.exists && mounted) {
-        setState(() {
-          _userRole = doc.data()!['role'];
-        });
+      try {
+        final doc = await FirebaseFirestore.instance.collection(usersCollectionPath).doc(user.uid).get();
+        if (doc.exists && mounted) {
+          setState(() {
+            _userRole = doc.data()!['role'];
+            _userAddress = doc.data()!['address'];
+          });
+        }
+      } catch (e) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error loading user data: $e')),
+        );
       }
+    }
+  }
+
+  Future<void> _launchMaps(String? address) async {
+    if (address == null || address.isEmpty) return;
+    final query = Uri.encodeComponent(address);
+    final url = Uri.parse('https://www.google.com/maps/search/?api=1&query=$query');
+     try {
+      if (await canLaunchUrl(url)) {
+        await launchUrl(url);
+      } else {
+         throw 'Could not launch $url';
+      }
+    } catch(e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Could not open maps: $e')),
+      );
     }
   }
 
@@ -70,6 +96,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       leading: Icon(Icons.verified_user, color: theme.colorScheme.primary),
                       title: const Text('Role'),
                       subtitle: Text(_userRole!, style: theme.textTheme.bodyLarge),
+                    ),
+                  if (_userAddress != null)
+                    ListTile(
+                      leading: Icon(Icons.location_pin, color: theme.colorScheme.primary),
+                      title: const Text('Address'),
+                      subtitle: Text(_userAddress!, style: theme.textTheme.bodyLarge),
+                      trailing: IconButton(
+                        icon: const Icon(Icons.map),
+                        onPressed: () => _launchMaps(_userAddress),
+                        tooltip: 'View on Google Maps',
+                      ),
                     ),
                 ],
               ),

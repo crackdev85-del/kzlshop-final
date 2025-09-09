@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:myapp/constants.dart';
 import 'package:myapp/providers/cart_provider.dart';
 import 'package:provider/provider.dart';
@@ -14,23 +15,12 @@ class ProductDetailScreen extends StatefulWidget {
 }
 
 class _ProductDetailScreenState extends State<ProductDetailScreen> {
-  int _quantity = 1;
+  final _quantityController = TextEditingController(text: '1');
 
-  void _incrementQuantity(int stockQuantity) {
-    setState(() {
-      // Do not allow quantity to exceed stock
-      if (_quantity < stockQuantity) {
-        _quantity++;
-      }
-    });
-  }
-
-  void _decrementQuantity() {
-    setState(() {
-      if (_quantity > 1) {
-        _quantity--;
-      }
-    });
+  @override
+  void dispose() {
+    _quantityController.dispose();
+    super.dispose();
   }
 
   @override
@@ -113,23 +103,37 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      IconButton(
-                        icon: const Icon(Icons.remove_circle_outline),
-                        onPressed: _decrementQuantity,
-                        iconSize: 32,
-                        color: Theme.of(context).colorScheme.secondary,
-                      ),
-                      const SizedBox(width: 24),
-                      Text(
-                        '$_quantity',
-                        style: textTheme.headlineMedium,
-                      ),
-                      const SizedBox(width: 24),
-                      IconButton(
-                        icon: const Icon(Icons.add_circle_outline),
-                        onPressed: () => _incrementQuantity(stockQuantity),
-                        iconSize: 32,
-                        color: Theme.of(context).colorScheme.primary,
+                      const Text('Quantity:', style: TextStyle(fontSize: 16)),
+                      const SizedBox(width: 16),
+                      SizedBox(
+                        width: 80, // Adjust width as needed
+                        child: TextFormField(
+                          controller: _quantityController,
+                          keyboardType: TextInputType.number,
+                          inputFormatters: <TextInputFormatter>[
+                            FilteringTextInputFormatter.digitsOnly
+                          ],
+                          textAlign: TextAlign.center,
+                          decoration: InputDecoration(
+                            isDense: true,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Enter a quantity';
+                            }
+                            final int? quantity = int.tryParse(value);
+                            if (quantity == null || quantity <= 0) {
+                              return 'Invalid';
+                            }
+                            if (quantity > stockQuantity) {
+                              return 'Over stock';
+                            }
+                            return null;
+                          },
+                        ),
                       ),
                     ],
                   ),
@@ -141,13 +145,23 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   // Disable button if stock is 0
                   child: ElevatedButton.icon(
                     onPressed: stockQuantity == 0 ? null : () {
+                      final int quantity = int.tryParse(_quantityController.text) ?? 1;
+                      if (quantity <= 0 || quantity > stockQuantity) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Please enter a valid quantity.'),
+                            duration: Duration(seconds: 2),
+                          ),
+                        );
+                        return;
+                      }
                       // Pass the whole document and the selected quantity
-                      cart.addItem(productDocument as QueryDocumentSnapshot, quantity: _quantity);
+                      cart.addItem(productDocument as QueryDocumentSnapshot, quantity: quantity);
 
                       ScaffoldMessenger.of(context).hideCurrentSnackBar();
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          content: Text('$_quantity x $name added to cart!'),
+                          content: Text('$quantity x $name added to cart!'),
                           duration: const Duration(seconds: 2),
                         ),
                       );

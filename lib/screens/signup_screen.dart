@@ -1,8 +1,9 @@
-
 import 'dart:developer' as developer;
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:geocoding/geocoding.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:myapp/constants.dart';
 
@@ -29,6 +30,7 @@ class _SignupScreenState extends State<SignupScreen> {
   final _auth = FirebaseAuth.instance;
   final _firestore = FirebaseFirestore.instance;
   bool _isLoading = false;
+  bool _isFetchingLocation = false;
 
   @override
   void initState() {
@@ -62,6 +64,77 @@ class _SignupScreenState extends State<SignupScreen> {
         backgroundColor: Colors.red,
       ),
     );
+  }
+
+ Future<void> _getCurrentLocation() async {
+    if (!mounted) return;
+    setState(() {
+      _isFetchingLocation = true;
+    });
+
+    try {
+      bool serviceEnabled;
+      LocationPermission permission;
+
+      serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        _showError('သင့် Location ဖွင့်ပေးရန်လိုပါသည်');
+        return;
+      }
+
+      permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          _showError('Location permission တောင်းခြင်းကို ငြင်းပယ်ထားပါသည်။');
+          return;
+        }
+      }
+
+      if (permission == LocationPermission.deniedForever) {
+        _showError(
+            'Location permission ကို အပြီးတိုင် ငြင်းပယ်ထားသောကြောင့် တောင်းဆို၍မရပါ။');
+        return;
+      }
+
+      Position position = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high);
+
+      // Set coordinates to location controller
+      final coordinates = '${position.latitude}, ${position.longitude}';
+
+      // Get readable address from coordinates
+      String readableAddress = 'Unable to fetch address';
+      try {
+          List<Placemark> placemarks = await placemarkFromCoordinates(
+            position.latitude,
+            position.longitude,
+          );
+
+          if (placemarks.isNotEmpty) {
+            Placemark place = placemarks[0];
+            readableAddress = '${place.street}, ${place.subLocality}, ${place.locality}';
+          }
+      } catch (e) {
+          developer.log('Could not get placemark', name: 'myapp.signup', error: e);
+      }
+
+      if (mounted) {
+        setState(() {
+          _addressController.text = readableAddress;
+          _locationController.text = coordinates;
+        });
+      }
+
+    } catch (e) {
+      _showError("Failed to get location: $e");
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isFetchingLocation = false;
+        });
+      }
+    }
   }
 
   Future<void> _signup() async {
@@ -113,6 +186,17 @@ class _SignupScreenState extends State<SignupScreen> {
 
       await userCredential.user?.updateDisplayName(_usernameController.text.trim());
 
+      final locationString = _locationController.text.trim();
+      GeoPoint? locationGeoPoint;
+      if(locationString.contains(',')) {
+          final parts = locationString.split(',');
+          final lat = double.tryParse(parts[0].trim());
+          final lon = double.tryParse(parts[1].trim());
+          if(lat != null && lon != null) {
+              locationGeoPoint = GeoPoint(lat, lon);
+          }
+      }
+
       // Create a document for the user in Firestore
       await _firestore.collection(usersCollectionPath).doc(userCredential.user!.uid).set({
         'email': userCredential.user!.email,
@@ -121,7 +205,8 @@ class _SignupScreenState extends State<SignupScreen> {
         'shopName': _shopNameController.text.trim(),
         'phoneNumber': _phoneController.text.trim(),
         'address': _addressController.text.trim(),
-        'location': _locationController.text.trim(),
+        'location': locationGeoPoint,
+        'coordinates': locationString, // Storing raw string as well
         'township': _selectedTownship,
         'role': 'user', // Default role
         'createdAt': FieldValue.serverTimestamp(),
@@ -211,6 +296,19 @@ class _SignupScreenState extends State<SignupScreen> {
                       });
                     },
                   ),
+                  const SizedBox(height: 16.0),
+
+                  // Add your location button
+                  _isFetchingLocation 
+                    ? const Center(child: CircularProgressIndicator()) 
+                    : OutlinedButton.icon(
+                        onPressed: _getCurrentLocation,
+                        icon: const Icon(Icons.my_location),
+                        label: const Text('Add your location'),
+                        style: OutlinedButton.styleFrom(
+                           padding: const EdgeInsets.symmetric(vertical: 12),
+                        ),
+                      ),
                   
                   const SizedBox(height: 24),
                   _isLoading

@@ -105,6 +105,20 @@ class OrderProvider with ChangeNotifier {
     }
   }
 
+  Future<void> deleteOrder(String orderId) async {
+    final user = _auth.currentUser;
+    if (user == null) return;
+
+    try {
+      await _firestore.collection(ordersCollectionPath).doc(orderId).delete();
+      _orders.removeWhere((order) => order.id == orderId);
+      notifyListeners();
+    } catch (error) {
+      print('Error deleting order: $error');
+      throw error;
+    }
+  }
+
   // New function to update order status
   Future<void> updateOrderStatus(String orderId, String newStatus) async {
     try {

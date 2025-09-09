@@ -5,8 +5,8 @@ import 'package:myapp/constants.dart';
 import 'package:myapp/providers/cart_provider.dart';
 import 'package:myapp/screens/admin/admin_home_screen.dart';
 import 'package:myapp/screens/user/cart_screen.dart';
-import 'package:myapp/screens/user/my_orders_screen.dart'; // Import MyOrdersScreen
-import 'package:myapp/screens/user/profile_screen.dart';
+import 'package:myapp/screens/user/my_orders_screen.dart'; 
+import 'package:myapp/screens/user_profile_screen.dart';
 import 'package:myapp/widgets/product_card.dart';
 import 'package:provider/provider.dart';
 
@@ -103,7 +103,7 @@ class _HomeScreenState extends State<HomeScreen> {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const ProfileScreen()),
+                MaterialPageRoute(builder: (context) => const UserProfileScreen()),
               );
             },
           ),

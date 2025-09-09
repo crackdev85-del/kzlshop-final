@@ -2,6 +2,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:myapp/providers/order_provider.dart' as ord;
+import 'package:provider/provider.dart';
 
 class OrderItemCard extends StatefulWidget {
   final ord.OrderItem order;
@@ -48,6 +49,50 @@ class _OrderItemCardState extends State<OrderItemCard> {
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 ),
                 const SizedBox(width: 8),
+                if (widget.order.status == 'Order Placed')
+                  IconButton(
+                    icon: const Icon(Icons.delete),
+                    onPressed: () async {
+                      final confirmed = await showDialog(
+                        context: context,
+                        builder: (ctx) => AlertDialog(
+                          title: const Text('Are you sure?'),
+                          content: const Text(
+                            'Do you want to delete this order?',
+                          ),
+                          actions: <Widget>[
+                            TextButton(
+                              child: const Text('No'),
+                              onPressed: () {
+                                Navigator.of(ctx).pop(false);
+                              },
+                            ),
+                            TextButton(
+                              child: const Text('Yes'),
+                              onPressed: () {
+                                Navigator.of(ctx).pop(true);
+                              },
+                            ),
+                          ],
+                        ),
+                      );
+                      if (confirmed) {
+                        try {
+                          await Provider.of<ord.OrderProvider>(context, listen: false)
+                              .deleteOrder(widget.order.id);
+                        } catch (error) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                'Deleting failed!',
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                          );
+                        }
+                      }
+                    },
+                  ),
                 IconButton(
                   icon: Icon(_expanded ? Icons.expand_less : Icons.expand_more),
                   onPressed: () {
