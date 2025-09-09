@@ -1,9 +1,12 @@
+import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:myapp/constants.dart';
 import 'package:myapp/providers/cart_provider.dart';
+import 'package:myapp/screens/user/cart_screen.dart';
+import 'package:myapp/widgets/fade_page_route.dart';
 import 'package:provider/provider.dart';
 
 class ProductDetailScreen extends StatefulWidget {
@@ -60,29 +63,52 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           final int stockQuantity = (productData[Constants.productQuantity] ?? 0) as int;
           final String description = productData[Constants.productDescription] ?? '';
 
+          Widget imageWidget;
+          if (imageUrl.startsWith('data:image')) {
+            try {
+              final UriData? data = Uri.parse(imageUrl).data;
+              if (data != null) {
+                final Uint8List imageBytes = data.contentAsBytes();
+                imageWidget = Image.memory(
+                  imageBytes,
+                  height: 250,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                );
+              } else {
+                imageWidget = Container(
+                  height: 250,
+                  color: Colors.grey[200],
+                  child: const Center(child: Icon(Icons.broken_image, size: 50)),
+                );
+              }
+            } catch (e) {
+              imageWidget = Container(
+                height: 250,
+                color: Colors.grey[200],
+                child: const Center(child: Icon(Icons.broken_image, size: 50)),
+              );
+            }
+          } else {
+              imageWidget = Container(
+              height: 250,
+              color: Colors.grey[200],
+              child: const Center(child: Icon(Icons.image_not_supported, size: 50)),
+            );
+          }
+
           return SingleChildScrollView(
             padding: const EdgeInsets.all(16.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                 if (imageUrl.isNotEmpty)
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: Hero(
-                      tag: 'product-image-${widget.productId}', // Hero animation tag
-                      child: Image.network(
-                        imageUrl,
-                        height: 250,
-                        width: double.infinity,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) => Container(
-                          height: 250,
-                          color: Colors.grey[200],
-                          child: const Center(child: Icon(Icons.broken_image, size: 50)),
-                        ),
-                      ),
-                    ),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Hero(
+                    tag: 'product-image-${widget.productId}',
+                    child: imageWidget,
                   ),
+                ),
                 const SizedBox(height: 16),
                 Text(name, style: textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold)),
                 const SizedBox(height: 8),
@@ -157,7 +183,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         return;
                       }
                       // Pass the whole document and the selected quantity
-                      cart.addItem(productDocument as QueryDocumentSnapshot, quantity: quantity);
+                      cart.addItem(productDocument, quantity: quantity);
 
                       FirebaseAnalytics.instance.logAddToCart(
                         items: [
@@ -172,12 +198,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         currency: 'MMK',
                       );
 
-                      ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('$quantity x $name added to cart!'),
-                          duration: const Duration(seconds: 2),
-                        ),
+                      Navigator.push(
+                        context,
+                        FadePageRoute(child: const CartScreen()),
                       );
                     },
                     icon: const Icon(Icons.add_shopping_cart),

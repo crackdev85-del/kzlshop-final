@@ -36,6 +36,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           });
         }
       } catch (e) {
+          if (!mounted) return;
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Error loading user data: $e')),
         );
@@ -54,6 +55,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
          throw 'Could not launch $url';
       }
     } catch(e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Could not open maps: $e')),
       );

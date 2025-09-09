@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:myapp/constants.dart';
 import 'package:myapp/providers/cart_provider.dart';
 import 'package:myapp/screens/admin/admin_home_screen.dart';
+import 'package:myapp/screens/user/cart_screen.dart';
 import 'package:myapp/screens/user/my_orders_screen.dart'; 
 import 'package:myapp/widgets/product_card.dart';
 import 'package:provider/provider.dart';
@@ -88,7 +89,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 tooltip: 'My Cart',
                 icon: const Icon(Icons.shopping_cart),
                 onPressed: () {
-                  widget.pageController.animateToPage(2, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
+                   Navigator.push(context, MaterialPageRoute(builder: (context) => const CartScreen()));
                 },
               ),
             ),

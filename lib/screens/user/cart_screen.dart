@@ -151,6 +151,7 @@ class _OrderButtonState extends State<OrderButton> {
                   widget.cart.totalAmount,
                 );
                 widget.cart.clearCart();
+                if (!context.mounted) return;
                 ScaffoldMessenger.of(context).hideCurrentSnackBar();
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
@@ -159,6 +160,7 @@ class _OrderButtonState extends State<OrderButton> {
                   ),
                 );
               } catch (error) {
+                if (!context.mounted) return;
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
                     content: Text('Ordering failed! Please try again later.'),

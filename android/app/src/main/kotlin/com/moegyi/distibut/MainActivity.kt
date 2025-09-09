@@ -1,4 +1,4 @@
-package com.moegyi.shop
+package com.moegyi.distibut
 
 import io.flutter.embedding.android.FlutterActivity
 

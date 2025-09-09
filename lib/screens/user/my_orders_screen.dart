@@ -1,61 +1,56 @@
 import 'package:flutter/material.dart';
-import 'package:myapp/providers/order_provider.dart' show OrderProvider;
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:myapp/constants.dart';
+import 'package:myapp/models/order.dart';
 import 'package:myapp/widgets/order_item_card.dart';
-import 'package:provider/provider.dart';
 
-class MyOrdersScreen extends StatefulWidget {
-  static const routeName = '/my-orders';
-
+class MyOrdersScreen extends StatelessWidget {
   const MyOrdersScreen({super.key});
 
   @override
-  State<MyOrdersScreen> createState() => _MyOrdersScreenState();
-}
-
-class _MyOrdersScreenState extends State<MyOrdersScreen> {
-  Future? _ordersFuture;
-
-  Future _obtainOrdersFuture() {
-    return Provider.of<OrderProvider>(context, listen: false).fetchAndSetOrders();
-  }
-
-  @override
-  void initState() {
-    _ordersFuture = _obtainOrdersFuture();
-    super.initState();
-  }
-
-  @override
   Widget build(BuildContext context) {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    final theme = Theme.of(context);
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('My Orders'),
+        title: Text(
+          'My Orders',
+          style: theme.textTheme.titleLarge?.copyWith(color: theme.colorScheme.onPrimary),
+        ),
+        backgroundColor: theme.colorScheme.primary,
+        iconTheme: IconThemeData(color: theme.colorScheme.onPrimary),
       ),
-      body: FutureBuilder(
-        future: _ordersFuture,
-        builder: (ctx, dataSnapshot) {
-          if (dataSnapshot.connectionState == ConnectionState.waiting) {
+      body: StreamBuilder<QuerySnapshot>(
+        stream: FirebaseFirestore.instance
+            .collection(ordersCollectionPath)
+            .where('userId', isEqualTo: currentUser?.uid)
+            .orderBy('orderDate', descending: true)
+            .snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
-          } else {
-            if (dataSnapshot.error != null) {
-              // ...
-              // Do error handling stuff
-              return const Center(
-                child: Text('An error occurred!'),
-              );
-            } else {
-              return Consumer<OrderProvider>(
-                builder: (ctx, orderData, child) => orderData.orders.isEmpty
-                    ? const Center(
-                        child: Text('You have no orders yet.'),
-                      )
-                    : ListView.builder(
-                        itemCount: orderData.orders.length,
-                        itemBuilder: (ctx, i) => OrderItemCard(order: orderData.orders[i]),
-                      ),
-              );
-            }
           }
+          if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          }
+          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+            return const Center(child: Text('You have no orders yet.'));
+          }
+
+          final orders = snapshot.data!.docs
+              .map((doc) => Order.fromFirestore(doc))
+              .toList();
+
+          return ListView.builder(
+            itemCount: orders.length,
+            itemBuilder: (context, index) {
+              final order = orders[index];
+              final orderNumber = orders.length - index; // Decreasing order number
+              return OrderItemCard(order: order, orderNumber: orderNumber);
+            },
+          );
         },
       ),
     );
