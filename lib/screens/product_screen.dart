@@ -1,10 +1,9 @@
-import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:myapp/constants.dart';
-import 'package:myapp/screens/product_detail_screen.dart';
+import 'package:myapp/screens/user/product_detail_screen.dart';
 
 // A custom widget to display images from either a network URL or a base64 string.
 class DisplayImage extends StatelessWidget {

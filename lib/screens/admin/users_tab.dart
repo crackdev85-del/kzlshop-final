@@ -45,6 +45,7 @@ class UsersTab extends StatelessWidget {
 
   Future<void> _launchMaps(BuildContext context, String? address) async {
     if (address == null || address.isEmpty) {
+        if (!context.mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
          const SnackBar(content: Text('No address available for this user.')),
       );
@@ -59,6 +60,7 @@ class UsersTab extends StatelessWidget {
          throw 'Could not launch $url';
       }
     } catch(e) {
+      if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Could not open maps: $e')),
       );

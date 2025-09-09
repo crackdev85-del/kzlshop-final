@@ -4,14 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:myapp/constants.dart';
 import 'package:myapp/providers/cart_provider.dart';
 import 'package:myapp/screens/admin/admin_home_screen.dart';
-import 'package:myapp/screens/user/cart_screen.dart';
 import 'package:myapp/screens/user/my_orders_screen.dart'; 
-import 'package:myapp/screens/user_profile_screen.dart';
 import 'package:myapp/widgets/product_card.dart';
 import 'package:provider/provider.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  final PageController pageController;
+  const HomeScreen({super.key, required this.pageController});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -89,10 +88,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 tooltip: 'My Cart',
                 icon: const Icon(Icons.shopping_cart),
                 onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const CartScreen()),
-                  );
+                  widget.pageController.animateToPage(2, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
                 },
               ),
             ),
@@ -101,10 +97,7 @@ class _HomeScreenState extends State<HomeScreen> {
             tooltip: 'My Profile',
             icon: const Icon(Icons.person),
             onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const UserProfileScreen()),
-              );
+              widget.pageController.animateToPage(3, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
             },
           ),
         ],

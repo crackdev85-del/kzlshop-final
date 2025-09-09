@@ -130,7 +130,6 @@ class AnnouncementsTab extends StatelessWidget {
     final titleController = TextEditingController(text: isEditing ? data!['title'] : '');
     final messageController = TextEditingController(text: isEditing ? data!['message'] : '');
     final formKey = GlobalKey<FormState>();
-    final theme = Theme.of(context);
 
     showDialog(
       context: context,

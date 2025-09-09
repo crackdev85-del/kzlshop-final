@@ -64,7 +64,7 @@ class OrderProvider with ChangeNotifier {
       _orders = loadedOrders;
       notifyListeners();
     } catch (error) {
-      print('Error fetching orders: $error');
+      debugPrint('Error fetching orders: $error');
     }
   }
 
@@ -100,8 +100,8 @@ class OrderProvider with ChangeNotifier {
       );
       notifyListeners();
     } catch (error) {
-      print('Error adding order: $error');
-      throw error;
+      debugPrint('Error adding order: $error');
+      rethrow;
     }
   }
 
@@ -114,8 +114,8 @@ class OrderProvider with ChangeNotifier {
       _orders.removeWhere((order) => order.id == orderId);
       notifyListeners();
     } catch (error) {
-      print('Error deleting order: $error');
-      throw error;
+      debugPrint('Error deleting order: $error');
+      rethrow;
     }
   }
 
@@ -129,9 +129,9 @@ class OrderProvider with ChangeNotifier {
       // No need to call notifyListeners() here because the Admin screen is using a StreamBuilder
       // which will automatically reflect the changes from Firestore.
     } catch (error) {
-      print('Error updating order status: $error');
+      debugPrint('Error updating order status: $error');
       // Optionally, re-throw the error to show a message in the UI
-      throw error;
+      rethrow;
     }
   }
 }

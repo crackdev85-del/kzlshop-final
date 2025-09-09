@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:myapp/constants.dart';
@@ -50,7 +51,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             return const Center(child: Text('Product not found'));
           }
 
-          final productDocument = snapshot.data! as DocumentSnapshot;
+          final productDocument = snapshot.data!;
           final productData = productDocument.data() as Map<String, dynamic>;
 
           final String name = productData[Constants.productName] ?? 'No Name';
@@ -157,6 +158,19 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       }
                       // Pass the whole document and the selected quantity
                       cart.addItem(productDocument as QueryDocumentSnapshot, quantity: quantity);
+
+                      FirebaseAnalytics.instance.logAddToCart(
+                        items: [
+                          AnalyticsEventItem(
+                            itemId: widget.productId,
+                            itemName: name,
+                            price: price,
+                            quantity: quantity,
+                          ),
+                        ],
+                        value: price * quantity,
+                        currency: 'MMK',
+                      );
 
                       ScaffoldMessenger.of(context).hideCurrentSnackBar();
                       ScaffoldMessenger.of(context).showSnackBar(

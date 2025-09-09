@@ -40,7 +40,7 @@ class AuthWrapper extends StatelessWidget {
                 if (role == 'admin') {
                   return const AdminHomeScreen();
                 } else if (role == 'user') {
-                  return const HomeScreen();
+                  return HomeScreen(pageController: PageController());
                 }
               }
 

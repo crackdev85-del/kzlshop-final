@@ -1,4 +1,3 @@
-import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:myapp/providers/order_provider.dart' as ord;
@@ -131,7 +130,7 @@ class _OrderItemCardState extends State<OrderItemCard> {
                           )
                         ],
                       ),
-                    )).toList(),
+                    )),
                  ]
               ),
             )

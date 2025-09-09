@@ -98,7 +98,7 @@ class _SignupScreenState extends State<SignupScreen> {
       }
 
       Position position = await Geolocator.getCurrentPosition(
-          desiredAccuracy: LocationAccuracy.high);
+          locationSettings: const LocationSettings(accuracy: LocationAccuracy.high));
 
       // Set coordinates to location controller
       final coordinates = '${position.latitude}, ${position.longitude}';

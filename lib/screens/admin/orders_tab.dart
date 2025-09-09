@@ -105,7 +105,7 @@ class _AdminOrderCardState extends State<AdminOrderCard> {
                         ],
                       ),
                     );
-                  }).toList(),
+                  }),
                   const Divider(height: 24),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,

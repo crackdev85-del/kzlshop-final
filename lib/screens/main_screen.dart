@@ -17,23 +17,37 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
+  late final PageController _pageController;
 
-  static const List<Widget> _widgetOptions = <Widget>[
-    HomeTab(),
-    WishlistTab(),
-    CartTab(),
-    ProfileTab(),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController();
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
 
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
+      _pageController.animateToPage(index, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
     });
   }
 
   @override
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
+    final List<Widget> widgetOptions = <Widget>[
+      HomeTab(pageController: _pageController),
+      const WishlistTab(),
+      const CartTab(),
+      const ProfileTab(),
+    ];
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('KZL Shop'),
@@ -45,8 +59,14 @@ class _MainScreenState extends State<MainScreen> {
           ),
         ],
       ),
-      body: Center(
-        child: _widgetOptions.elementAt(_selectedIndex),
+      body: PageView(
+        controller: _pageController,
+        onPageChanged: (index) {
+          setState(() {
+            _selectedIndex = index;
+          });
+        },
+        children: widgetOptions,
       ),
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
