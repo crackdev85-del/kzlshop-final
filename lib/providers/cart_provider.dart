@@ -1,39 +1,13 @@
+
 import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:myapp/models/cart_item.dart';
 
-// Represents a single item in the shopping cart
-class CartItem {
-  final String id; // Product ID
-  final String name;
-  final int quantity;
-  final double price;
-  final DocumentSnapshot? product; // Made nullable
-
-  CartItem({
-    required this.id,
-    required this.name,
-    required this.quantity,
-    required this.price,
-    this.product, // No longer required
-  });
-
-  // Method to create a copy with updated values
-  CartItem copyWith({
-    int? quantity,
-  }) {
-    return CartItem(
-      id: id,
-      name: name,
-      quantity: quantity ?? this.quantity,
-      price: price,
-      product: product, 
-    );
-  }
-}
-
-// Manages the state of the shopping cart
 class CartProvider with ChangeNotifier {
   Map<String, CartItem> _items = {};
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
   Map<String, CartItem> get items {
     return {..._items};
@@ -70,7 +44,7 @@ class CartProvider with ChangeNotifier {
           name: productData['name'],
           price: (productData['price'] as num).toDouble(),
           quantity: quantity,
-          product: product, // Assign the snapshot here
+          product: product,
         ),
       );
     }
@@ -99,8 +73,41 @@ class CartProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> addOrder(String shippingAddress, String phoneNumber) async {
+    final user = _auth.currentUser;
+    if (user == null) {
+      throw Exception("User not logged in");
+    }
+    final orderRef = _firestore.collection('orders');
+    final lastOrderQuery = await orderRef.orderBy('orderNumber', descending: true).limit(1).get();
+    int newOrderNumber = 1;
+    if (lastOrderQuery.docs.isNotEmpty) {
+      newOrderNumber = (lastOrderQuery.docs.first.data()['orderNumber'] as int) + 1;
+    }
+
+    final newOrder = {
+      'userId': user.uid,
+      'orderNumber': newOrderNumber,
+      'items': _items.values.map((cartItem) => {
+        'productId': cartItem.id,
+        'name': cartItem.name,
+        'quantity': cartItem.quantity,
+        'price': cartItem.price,
+      }).toList(),
+      'totalAmount': totalAmount,
+      'orderDate': Timestamp.now(),
+      'status': 'Pending',
+      'shippingAddress': shippingAddress,
+      'phoneNumber': phoneNumber,
+    };
+
+    await orderRef.add(newOrder);
+    clearCart();
+  }
+
   void clearCart() {
     _items = {};
     notifyListeners();
   }
 }
+

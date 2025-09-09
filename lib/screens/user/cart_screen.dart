@@ -1,9 +1,9 @@
-
 import 'package:flutter/material.dart';
 import 'package:myapp/providers/cart_provider.dart';
 import 'package:myapp/providers/order_provider.dart';
 import 'package:myapp/screens/user/product_detail_screen.dart';
 import 'package:provider/provider.dart';
+import 'package:myapp/models/cart_item.dart';
 
 class CartScreen extends StatelessWidget {
   const CartScreen({super.key});
@@ -147,7 +147,7 @@ class _OrderButtonState extends State<OrderButton> {
               });
               try {
                 await Provider.of<OrderProvider>(context, listen: false).addOrder(
-                  widget.cart.items.values.toList(),
+                  widget.cart.items.values.map((item) => item.toMap()).toList(),
                   widget.cart.totalAmount,
                 );
                 widget.cart.clearCart();

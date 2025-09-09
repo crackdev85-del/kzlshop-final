@@ -1,18 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:myapp/models/order.dart';
+import 'package:myapp/models/order_item.dart';
 import 'package:myapp/screens/user/order_details_screen.dart';
 
 class OrderItemCard extends StatelessWidget {
-  final Order order;
-  final int orderNumber;
+  final OrderItem order;
 
-  const OrderItemCard({super.key, required this.order, required this.orderNumber});
+  const OrderItemCard({super.key, required this.order});
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final formattedDate = DateFormat('dd-MM-yyyy').format(order.orderDate);
+    final formattedDate = DateFormat('dd-MM-yyyy').format(order.dateTime);
 
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
@@ -36,7 +35,7 @@ class OrderItemCard extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'Order #$orderNumber', // Display the order number
+                    'Order #${order.orderNumber}',
                     style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
                   ),
                   Chip(

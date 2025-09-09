@@ -18,7 +18,7 @@ class AdminOrdersScreen extends StatelessWidget {
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
             .collection(ordersCollectionPath)
-            .orderBy('dateTime', descending: true)
+            .orderBy('orderDate', descending: true)
             .snapshots(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -64,6 +64,7 @@ class _AdminOrderCardState extends State<AdminOrderCard> {
     final orderId = widget.orderSnapshot.id;
     final String currentStatus = orderData['status'] ?? 'Order Placed';
     final List<dynamic> products = orderData['products'] ?? [];
+    final int orderNumber = orderData['orderNumber'] ?? 0;
 
     final List<String> statusOptions = [
       'Order Placed',
@@ -79,10 +80,11 @@ class _AdminOrderCardState extends State<AdminOrderCard> {
       child: Column(
         children: [
           ListTile(
-            title: UserEmailWidget(userId: orderData['userId']),
-            subtitle: Text(
-                'Total: ${orderData['totalAmount'].toStringAsFixed(2)} Kyat\nPlaced on: ${DateFormat('dd/MM/yy hh:mm a').format((orderData['dateTime'] as Timestamp).toDate())}'),
-            isThreeLine: true,
+            title: Text(
+              'Order #$orderNumber',
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            ),
+            subtitle: UserEmailWidget(userId: orderData['userId']),
             trailing: IconButton(
               icon: Icon(_expanded ? Icons.expand_less : Icons.expand_more),
               onPressed: () {
@@ -98,6 +100,11 @@ class _AdminOrderCardState extends State<AdminOrderCard> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  Text(
+                      'Order Date: ${DateFormat('dd/MM/yy hh:mm a').format((orderData['orderDate'] as Timestamp).toDate())}'),
+                  const SizedBox(height: 8),
+                  Text('Total: ${orderData['totalAmount'].toStringAsFixed(2)} Kyat'),
+                  const SizedBox(height: 8),
                   const Text('Products:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                   const SizedBox(height: 8),
                   ...products.map((prod) {
@@ -162,7 +169,6 @@ class UserEmailWidget extends StatelessWidget {
         final userData = snapshot.data!.data() as Map<String, dynamic>;
         return Text(
           '${userData['email'] ?? 'No email available'}',
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
         );
       },
     );

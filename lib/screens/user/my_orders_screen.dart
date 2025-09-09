@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:myapp/constants.dart';
-import 'package:myapp/models/order.dart';
+import 'package:myapp/models/order_item.dart';
 import 'package:myapp/widgets/order_item_card.dart';
 
 class MyOrdersScreen extends StatelessWidget {
   const MyOrdersScreen({super.key});
+  static const routeName = '/my-orders';
 
   @override
   Widget build(BuildContext context) {
@@ -17,16 +17,17 @@ class MyOrdersScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text(
           'My Orders',
-          style: theme.textTheme.titleLarge?.copyWith(color: theme.colorScheme.onPrimary),
+          style: theme.textTheme.titleLarge
+              ?.copyWith(color: theme.colorScheme.onPrimary),
         ),
         backgroundColor: theme.colorScheme.primary,
         iconTheme: IconThemeData(color: theme.colorScheme.onPrimary),
       ),
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
-            .collection(ordersCollectionPath)
+            .collection('orders') // Ensure this collection path is correct
             .where('userId', isEqualTo: currentUser?.uid)
-            .orderBy('orderDate', descending: true)
+            .orderBy('dateTime', descending: true)
             .snapshots(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -39,16 +40,13 @@ class MyOrdersScreen extends StatelessWidget {
             return const Center(child: Text('You have no orders yet.'));
           }
 
-          final orders = snapshot.data!.docs
-              .map((doc) => Order.fromFirestore(doc))
-              .toList();
+          final orders = snapshot.data!.docs.map((doc) => OrderItem.fromFirestore(doc)).toList();
 
           return ListView.builder(
             itemCount: orders.length,
             itemBuilder: (context, index) {
               final order = orders[index];
-              final orderNumber = orders.length - index; // Decreasing order number
-              return OrderItemCard(order: order, orderNumber: orderNumber);
+              return OrderItemCard(order: order);
             },
           );
         },

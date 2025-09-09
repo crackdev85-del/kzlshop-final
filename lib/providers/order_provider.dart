@@ -2,23 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:myapp/constants.dart';
-import 'package:myapp/providers/cart_provider.dart';
-
-class OrderItem {
-  final String id;
-  final double totalAmount;
-  final List<CartItem> products;
-  final DateTime dateTime;
-  String status;
-
-  OrderItem({
-    required this.id,
-    required this.totalAmount,
-    required this.products,
-    required this.dateTime,
-    this.status = 'Order Placed',
-  });
-}
+import 'package:myapp/models/order_item.dart';
 
 class OrderProvider with ChangeNotifier {
   List<OrderItem> _orders = [];
@@ -44,21 +28,7 @@ class OrderProvider with ChangeNotifier {
       for (var doc in querySnapshot.docs) {
         final orderData = doc.data();
         loadedOrders.add(
-          OrderItem(
-            id: doc.id,
-            totalAmount: orderData['totalAmount'],
-            dateTime: (orderData['dateTime'] as Timestamp).toDate(),
-            status: orderData['status'] ?? 'Order Placed',
-            products: (orderData['products'] as List<dynamic>)
-                .map((item) => CartItem(
-                      id: item['id'],
-                      name: item['name'],
-                      quantity: item['quantity'],
-                      price: item['price'],
-                      product: null,
-                    ))
-                .toList(),
-          ),
+          OrderItem.fromMap(doc.id, orderData),
         );
       }
       _orders = loadedOrders;
@@ -68,25 +38,26 @@ class OrderProvider with ChangeNotifier {
     }
   }
 
-  Future<void> addOrder(List<CartItem> cartProducts, double total) async {
+  Future<void> addOrder(List<Map<String, dynamic>> cartProducts, double total) async {
     final user = _auth.currentUser;
     if (user == null) return;
 
     final timestamp = DateTime.now();
     try {
-      final newOrderRef = await _firestore.collection(ordersCollectionPath).add({
+      final orderRef = _firestore.collection(ordersCollectionPath);
+      final lastOrderQuery = await orderRef.orderBy('orderNumber', descending: true).limit(1).get();
+      int newOrderNumber = 1;
+      if (lastOrderQuery.docs.isNotEmpty) {
+        newOrderNumber = (lastOrderQuery.docs.first.data()['orderNumber'] as int) + 1;
+      }
+
+      final newOrderRef = await orderRef.add({
         'userId': user.uid,
         'totalAmount': total,
         'dateTime': Timestamp.fromDate(timestamp),
         'status': 'Order Placed',
-        'products': cartProducts
-            .map((cp) => {
-                  'id': cp.id,
-                  'name': cp.name,
-                  'quantity': cp.quantity,
-                  'price': cp.price,
-                })
-            .toList(),
+        'products': cartProducts,
+        'orderNumber': newOrderNumber,
       });
 
       _orders.insert(
@@ -94,8 +65,9 @@ class OrderProvider with ChangeNotifier {
         OrderItem(
           id: newOrderRef.id,
           totalAmount: total,
-          products: cartProducts,
+          products: cartProducts.map((item) => OrderProduct.fromMap(item)).toList(),
           dateTime: timestamp,
+          orderNumber: newOrderNumber,
         ),
       );
       notifyListeners();

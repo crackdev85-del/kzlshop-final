@@ -1,4 +1,3 @@
-
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -8,7 +7,6 @@ import 'package:myapp/firebase_options.dart';
 import 'package:myapp/widgets/auth_wrapper.dart';
 import 'package:myapp/providers/cart_provider.dart';
 import 'package:myapp/providers/order_provider.dart'; 
-import 'package:myapp/screens/user/my_orders_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -121,9 +119,6 @@ class MyApp extends StatelessWidget {
           darkTheme: darkTheme,
           themeMode: themeProvider.themeMode,
           home: const AuthWrapper(),
-          routes: {
-            MyOrdersScreen.routeName: (ctx) => const MyOrdersScreen(),
-          }, // Add this routes map
         );
       },
     );
