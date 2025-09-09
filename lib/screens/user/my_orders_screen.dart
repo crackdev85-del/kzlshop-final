@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:myapp/constants.dart';
 import 'package:myapp/models/order_item.dart';
 import 'package:myapp/widgets/order_item_card.dart';
 
@@ -25,7 +26,7 @@ class MyOrdersScreen extends StatelessWidget {
       ),
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
-            .collection('orders') // Ensure this collection path is correct
+            .collection(ordersCollectionPath) // Ensure this collection path is correct
             .where('userId', isEqualTo: currentUser?.uid)
             .orderBy('dateTime', descending: true)
             .snapshots(),

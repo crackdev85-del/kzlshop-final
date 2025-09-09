@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:myapp/providers/cart_provider.dart';
-import 'package:myapp/providers/order_provider.dart';
+import 'package:myapp/screens/checkout_screen.dart';
 import 'package:myapp/screens/user/product_detail_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:myapp/models/cart_item.dart';
@@ -31,7 +31,8 @@ class CartScreen extends StatelessWidget {
             TextButton(
               child: const Text('Yes'),
               onPressed: () {
-                Provider.of<CartProvider>(context, listen: false).removeItem(productId);
+                Provider.of<CartProvider>(context, listen: false)
+                    .removeItem(productId);
                 Navigator.of(ctx).pop();
               },
             ),
@@ -67,7 +68,15 @@ class CartScreen extends StatelessWidget {
                     ),
                     backgroundColor: theme.primaryColor,
                   ),
-                  OrderButton(cart: cart), // Extracted to a new widget
+                  TextButton(
+                    onPressed: (cart.totalAmount <= 0)
+                        ? null
+                        : () {
+                            Navigator.of(context)
+                                .pushNamed(CheckoutScreen.routeName);
+                          },
+                    child: const Text('ORDER NOW'),
+                  ),
                 ],
               ),
             ),
@@ -86,10 +95,11 @@ class CartScreen extends StatelessWidget {
                   ),
                   child: ListTile(
                     onTap: () {
-                       // Navigate to Product Detail Screen
-                        Navigator.of(context).push(MaterialPageRoute(
-                            builder: (context) => ProductDetailScreen(productId: productId),
-                        ));
+                      // Navigate to Product Detail Screen
+                      Navigator.of(context).push(MaterialPageRoute(
+                        builder: (context) =>
+                            ProductDetailScreen(productId: productId),
+                      ));
                     },
                     leading: CircleAvatar(
                       backgroundColor: Theme.of(context).primaryColor,
@@ -101,14 +111,17 @@ class CartScreen extends StatelessWidget {
                       ),
                     ),
                     title: Text(cartItem.name),
-                    subtitle: Text('Total: ${(cartItem.price * cartItem.quantity).toStringAsFixed(2)}'),
+                    subtitle: Text(
+                        'Total: ${(cartItem.price * cartItem.quantity).toStringAsFixed(2)}'),
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text('${cartItem.quantity} x'),
                         IconButton(
-                          icon: const Icon(Icons.delete_outline, color: Colors.red),
-                          onPressed: () => showRemoveConfirmationDialog(productId),
+                          icon: const Icon(Icons.delete_outline,
+                              color: Colors.red),
+                          onPressed: () =>
+                              showRemoveConfirmationDialog(productId),
                         ),
                       ],
                     ),
@@ -119,59 +132,6 @@ class CartScreen extends StatelessWidget {
           )
         ],
       ),
-    );
-  }
-}
-
-// New StatefulWidget for the Order Button to manage its own loading state
-class OrderButton extends StatefulWidget {
-  const OrderButton({super.key, required this.cart});
-
-  final CartProvider cart;
-
-  @override
-  State<OrderButton> createState() => _OrderButtonState();
-}
-
-class _OrderButtonState extends State<OrderButton> {
-  bool _isLoading = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return TextButton(
-      onPressed: (widget.cart.totalAmount <= 0 || _isLoading)
-          ? null
-          : () async {
-              setState(() {
-                _isLoading = true;
-              });
-              try {
-                await Provider.of<OrderProvider>(context, listen: false).addOrder(
-                  widget.cart.items.values.map((item) => item.toMap()).toList(),
-                  widget.cart.totalAmount,
-                );
-                widget.cart.clearCart();
-                if (!context.mounted) return;
-                ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('သင် မှာယူပြီးပါပြီ ကျွန်တော်တို့လက်ခံပေးပါမယ် ခေတ္တစောင့်ဆိုင်းပေးပါနော်'),
-                    duration: Duration(seconds: 3),
-                  ),
-                );
-              } catch (error) {
-                if (!context.mounted) return;
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Ordering failed! Please try again later.'),
-                  ),
-                );
-              }
-              setState(() {
-                _isLoading = false;
-              });
-            },
-      child: _isLoading ? const CircularProgressIndicator() : const Text('ORDER NOW'),
     );
   }
 }

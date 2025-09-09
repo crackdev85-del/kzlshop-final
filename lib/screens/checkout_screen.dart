@@ -110,6 +110,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                       await Provider.of<OrderProvider>(context, listen: false).addOrder(
                         cart.items.values.map((item) => item.toMap()).toList(),
                         cart.totalAmount,
+                        _shippingAddressController.text,
+                        _phoneNumberController.text,
                       );
                       scaffoldMessenger.showSnackBar(
                         const SnackBar(content: Text('Order placed successfully!')),

@@ -38,7 +38,7 @@ class OrderProvider with ChangeNotifier {
     }
   }
 
-  Future<void> addOrder(List<Map<String, dynamic>> cartProducts, double total) async {
+  Future<void> addOrder(List<Map<String, dynamic>> cartProducts, double total, String shippingAddress, String phoneNumber) async {
     final user = _auth.currentUser;
     if (user == null) return;
 
@@ -58,6 +58,8 @@ class OrderProvider with ChangeNotifier {
         'status': 'Order Placed',
         'products': cartProducts,
         'orderNumber': newOrderNumber,
+        'shippingAddress': shippingAddress,
+        'phoneNumber': phoneNumber,
       });
 
       _orders.insert(
