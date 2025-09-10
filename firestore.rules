@@ -2,22 +2,15 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Township Collection Rules
-    match /townships/{townshipId} {
-      // Any authenticated user can read the list of townships
-      allow read: if request.auth != null;
-      // Only users with the 'admin' custom claim can create, update, or delete
-      allow write: if request.auth.token.admin == true;
+    // Any authenticated user can read/write any user's document for debugging
+    match /artifacts/default-app-id/public/data/users/{userId} {
+      allow read, write: if request.auth != null;
     }
 
-    // Default rule for all other collections
-    // This rule allows anyone with your database reference to view, edit,
-    // and delete all data in your database. It is useful for getting
-    // started, but it is configured to expire after 30 days because it
-    // leaves your app open to attackers. At that time, all client
-    // requests to your database will be denied.
-    match /{document=**} {
-      allow read, write: if request.time < timestamp.date(2025, 10, 5);
+    // Authenticated users can read all other public data.
+    // The recursive wildcard {document=**} matches documents and collections.
+    match /artifacts/default-app-id/public/data/{document=**} {
+      allow read: if request.auth != null;
     }
   }
 }

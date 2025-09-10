@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -7,9 +8,9 @@ import 'package:image_picker/image_picker.dart';
 import 'package:myapp/constants.dart';
 import 'package:myapp/main.dart';
 import 'package:myapp/screens/admin/admin_home_screen.dart';
-import 'package:myapp/screens/user/edit_profile_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'dart:developer' as developer;
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -19,59 +20,58 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  late Future<DocumentSnapshot> _userDataFuture;
+  late Future<DocumentSnapshot<Map<String, dynamic>>> _userDataFuture;
   final ImagePicker _picker = ImagePicker();
   bool _isUploading = false;
 
   @override
   void initState() {
     super.initState();
-    _userDataFuture = _getUserData();
+    _userDataFuture = _loadUserData();
   }
 
-  Future<DocumentSnapshot> _getUserData() async {
+  Future<DocumentSnapshot<Map<String, dynamic>>> _loadUserData() {
     final user = FirebaseAuth.instance.currentUser;
-    if (user != null) {
-      try {
-        return await FirebaseFirestore.instance.collection(usersCollectionPath).doc(user.uid).get();
-      } catch (e) {
-        debugPrint("Error loading user data: $e");
-        if (!mounted) return Future.error(e);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading user data: $e')),
-        );
-        return Future.error(e);
-      }
+    if (user == null) {
+      developer.log('No user logged in', name: 'ProfileScreen');
+      return Future.error('No user logged in');
     }
-    return Future.error('No user logged in');
+    return FirebaseFirestore.instance.collection(usersCollectionPath).doc(user.uid).get();
+  }
+
+  void _retryLoadUserData() {
+    setState(() {
+      _userDataFuture = _loadUserData();
+    });
   }
 
   Future<void> _pickImage() async {
-    final XFile? image = await _picker.pickImage(source: ImageSource.camera, imageQuality: 50);
-    if (image != null) {
-      setState(() {
-        _isUploading = true;
-      });
-      try {
-        final imageBytes = await image.readAsBytes();
-        final base64Image = base64Encode(imageBytes);
-        final user = FirebaseAuth.instance.currentUser;
-        if (user != null) {
-          await FirebaseFirestore.instance
-              .collection(usersCollectionPath)
-              .doc(user.uid)
-              .update({'profilePicture': base64Image});
-          // Refresh user data
-          setState(() {
-            _userDataFuture = _getUserData();
-          });
-        }
-      } catch (e) {
-        if (!mounted) return;
+    final XFile? image = await _picker.pickImage(source: ImageSource.gallery, imageQuality: 50);
+    if (image == null) return;
+
+    setState(() {
+      _isUploading = true;
+    });
+
+    try {
+      final imageBytes = await image.readAsBytes();
+      final base64Image = base64Encode(imageBytes);
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        await FirebaseFirestore.instance
+            .collection(usersCollectionPath)
+            .doc(user.uid)
+            .update({'photoURL': 'data:image/png;base64,$base64Image'});
+        _retryLoadUserData(); // Refresh data
+      }
+    } catch (e) {
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error uploading image: $e')),
         );
-      } finally {
+      }
+    } finally {
+      if(mounted){
         setState(() {
           _isUploading = false;
         });
@@ -79,214 +79,206 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
-
   Future<void> _launchMaps(String? address) async {
     if (address == null || address.isEmpty) return;
     final query = Uri.encodeComponent(address);
     final url = Uri.parse('https://www.google.com/maps/search/?api=1&query=$query');
-     try {
+    try {
       if (await canLaunchUrl(url)) {
         await launchUrl(url);
       } else {
-         throw 'Could not launch $url';
+        throw 'Could not launch $url';
       }
-    } catch(e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Could not open maps: $e')),
-      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Could not open maps: $e')),
+        );
+      }
     }
   }
 
   Future<void> _signOutAndNavigate(BuildContext context) async {
     await FirebaseAuth.instance.signOut();
-    if (!context.mounted) return;
-    Navigator.of(context).popUntil((route) => route.isFirst);
+    if (mounted) {
+      Navigator.of(context).popUntil((route) => route.isFirst);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final user = FirebaseAuth.instance.currentUser;
     final themeProvider = Provider.of<ThemeProvider>(context);
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Profile', style: theme.textTheme.titleLarge?.copyWith(color: theme.colorScheme.onPrimary)),
+        title: const Text('Profile'),
+        actions: [
+           IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: _retryLoadUserData,
+           )
+        ],
       ),
       body: FutureBuilder<DocumentSnapshot>(
         future: _userDataFuture,
         builder: (context, snapshot) {
+          if (snapshot.hasError) {
+             return Center(
+                child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                    const Icon(Icons.error_outline, color: Colors.red, size: 60),
+                    const Padding(
+                        padding: EdgeInsets.all(16.0),
+                        child: Text('Error loading profile. Please try again.', textAlign: TextAlign.center),
+                    ),
+                    ElevatedButton.icon(
+                        onPressed: _retryLoadUserData,
+                        icon: const Icon(Icons.refresh),
+                        label: const Text('Retry'),
+                    )
+                ],
+                ),
+            );
+          }
+
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
-          if (snapshot.hasError) {
-            return const Center(child: Text('Could not load profile data'));
-          }
+          
           if (!snapshot.hasData || !snapshot.data!.exists) {
-            return const Center(child: Text('User data not found.'));
+            return const Center(child: Text('User profile not found.'));
           }
 
           final userData = snapshot.data!.data() as Map<String, dynamic>;
-          final profilePicture = userData['profilePicture'];
-          final userName = userData['username'];
-          final phoneNumber = userData['phoneNumber'];
-          final shopName = userData['shopName'];
-          final userRole = userData['role'];
-          final userAddress = userData['address'];
-          final township = userData['township'];
-          final coordinates = userData['coordinates'];
+          final user = FirebaseAuth.instance.currentUser;
 
-          Widget profileImage;
-          if (profilePicture != null) {
-            final imageBytes = base64Decode(profilePicture);
-            profileImage = CircleAvatar(
-              radius: 50,
-              backgroundImage: MemoryImage(imageBytes),
-            );
-          } else {
-            profileImage = const CircleAvatar(
-              radius: 50,
-              child: Icon(Icons.person, size: 50),
-            );
+          final String username = userData['username'] ?? 'N/A';
+          final String email = user?.email ?? 'N/A';
+          final String shopName = userData['shopName'] ?? 'N/A';
+          final String phoneNumber = userData['phoneNumber'] ?? 'N/A';
+          final String address = userData['address'] ?? 'N/A';
+          final String userRole = userData['role'] ?? 'N/A';
+
+          Uint8List? imageBytes;
+          final String? photoURL = userData['photoURL'];
+          final String? profilePicture = userData['profilePicture'];
+          try {
+            String? base64String;
+            if (photoURL != null && photoURL.isNotEmpty && photoURL.startsWith('data:image')) {
+                base64String = photoURL.split(',').last;
+            } else if (profilePicture != null && profilePicture.isNotEmpty) {
+                base64String = profilePicture; 
+            }
+            
+            if (base64String != null) {
+                imageBytes = base64Decode(base64String);
+            }
+          } catch (e, s) {
+            developer.log('Error decoding profile image', name: 'ProfileScreen', error: e, stackTrace: s);
+            imageBytes = null;
           }
+
 
           return ListView(
             padding: const EdgeInsets.all(16.0),
             children: [
-              GestureDetector(
-                onTap: () async {
-                  final result = await Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const EditProfileScreen(),
-                    ),
-                  );
-                  if (result == true) {
-                    setState(() {
-                      _userDataFuture = _getUserData();
-                    });
-                  }
-                },
-                child: Center(
-                  child: Stack(
-                    children: [
-                      profileImage,
-                      Positioned(
-                        bottom: 0,
-                        right: 0,
-                        child: IconButton(
-                          icon: const Icon(Icons.camera_alt),
-                          onPressed: _pickImage,
-                          tooltip: 'Change Profile Picture',
-                        ),
+              Center(
+                child: Column(
+                  children: [
+                     Stack(
+                        alignment: Alignment.bottomRight,
+                        children: [
+                          CircleAvatar(
+                            radius: 60,
+                            backgroundImage: imageBytes != null ? MemoryImage(imageBytes) : null,
+                            child: imageBytes == null ? const Icon(Icons.person, size: 60) : null,
+                          ),
+                          if (_isUploading)
+                            const CircularProgressIndicator()
+                          else
+                            Material(
+                                color: theme.colorScheme.secondary,
+                                shape: const CircleBorder(),
+                                clipBehavior: Clip.antiAlias,
+                                child: IconButton(
+                                    icon: const Icon(Icons.camera_alt, color: Colors.white),
+                                    onPressed: _pickImage,
+                                ),
+                            )
+                        ],
                       ),
-                      if (_isUploading)
-                        const Positioned.fill(
-                          child: Center(child: CircularProgressIndicator()),
-                        ),
-                    ],
-                  ),
+                    const SizedBox(height: 16),
+                    Text(username, style: theme.textTheme.headlineSmall),
+                  ],
                 ),
               ),
               const SizedBox(height: 24),
               Card(
-                elevation: 4,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    children: [
-                       if (userName != null)
-                        ListTile(
-                          leading: Icon(Icons.person, color: theme.colorScheme.primary),
-                          title: const Text('Username'),
-                          subtitle: Text(userName, style: theme.textTheme.bodyLarge),
-                        ),
-                      ListTile(
-                        leading: Icon(Icons.email, color: theme.colorScheme.primary),
-                        title: const Text('Email'),
-                        subtitle: Text(user?.email ?? 'N/A', style: theme.textTheme.bodyLarge),
+                child: Column(
+                  children: [
+                    ListTile(
+                      leading: const Icon(Icons.email),
+                      title: const Text('Email'),
+                      subtitle: Text(email),
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.store),
+                      title: const Text('Shop Name'),
+                      subtitle: Text(shopName),
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.phone),
+                      title: const Text('Phone Number'),
+                      subtitle: Text(phoneNumber),
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.location_on),
+                      title: const Text('Address'),
+                      subtitle: Text(address),
+                      trailing: IconButton(
+                        icon: const Icon(Icons.map),
+                        onPressed: () => _launchMaps(address),
                       ),
-                      if (phoneNumber != null)
-                        ListTile(
-                          leading: Icon(Icons.phone, color: theme.colorScheme.primary),
-                          title: const Text('Phone Number'),
-                          subtitle: Text(phoneNumber, style: theme.textTheme.bodyLarge),
-                        ),
-                      if (shopName != null)
-                        ListTile(
-                          leading: Icon(Icons.store, color: theme.colorScheme.primary),
-                          title: const Text('Shop Name'),
-                          subtitle: Text(shopName, style: theme.textTheme.bodyLarge),
-                        ),
-                      if (userRole != null)
-                        ListTile(
-                          leading: Icon(Icons.verified_user, color: theme.colorScheme.primary),
-                          title: const Text('Role'),
-                          subtitle: Text(userRole, style: theme.textTheme.bodyLarge),
-                        ),
-                      if (userAddress != null)
-                        ListTile(
-                          leading: Icon(Icons.location_pin, color: theme.colorScheme.primary),
-                          title: const Text('Address'),
-                          subtitle: Text(userAddress, style: theme.textTheme.bodyLarge),
-                          trailing: IconButton(
-                            icon: const Icon(Icons.map),
-                            onPressed: () => _launchMaps(userAddress),
-                            tooltip: 'View on Google Maps',
-                          ),
-                        ),
-                        if (township != null)
-                        ListTile(
-                          leading: Icon(Icons.location_city, color: theme.colorScheme.primary),
-                          title: const Text('Township'),
-                          subtitle: Text(township, style: theme.textTheme.bodyLarge),
-                        ),
-                        if (coordinates != null)
-                        ListTile(
-                          leading: Icon(Icons.my_location, color: theme.colorScheme.primary),
-                          title: const Text('Location'),
-                          subtitle: Text(coordinates, style: theme.textTheme.bodyLarge),
-                        ),
-                    ],
-                  ),
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.verified_user),
+                      title: const Text('Role'),
+                      subtitle: Text(userRole),
+                    ),
+                  ],
                 ),
               ),
               const SizedBox(height: 20),
               Card(
-                elevation: 4,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                child: SwitchListTile(
-                  title: const Text('Dark Mode'),
-                  secondary: Icon(themeProvider.themeMode == ThemeMode.dark ? Icons.dark_mode : Icons.light_mode, color: theme.colorScheme.primary),
-                  value: themeProvider.themeMode == ThemeMode.dark,
-                  onChanged: (value) {
-                    themeProvider.toggleTheme();
-                  },
+                 child: SwitchListTile(
+                    title: const Text('Dark Mode'),
+                    secondary: Icon(themeProvider.themeMode == ThemeMode.dark ? Icons.dark_mode : Icons.light_mode),
+                    value: themeProvider.themeMode == ThemeMode.dark,
+                    onChanged: (value) {
+                        themeProvider.toggleTheme();
+                    },
                 ),
               ),
-              const SizedBox(height: 20),
+               const SizedBox(height: 20),
               if (userRole == 'admin')
                 ElevatedButton.icon(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const AdminHomeScreen()),
-                    );
-                  },
-                  icon: const Icon(Icons.admin_panel_settings),
-                  label: const Text('Admin Panel'),
+                    onPressed: () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => const AdminHomeScreen()),
+                        );
+                    },
+                    icon: const Icon(Icons.admin_panel_settings),
+                    label: const Text('Admin Panel'),
                 ),
-              const SizedBox(height: 40),
+              const SizedBox(height: 20),
               FilledButton.icon(
                 onPressed: () => _signOutAndNavigate(context),
                 icon: const Icon(Icons.logout),
                 label: const Text('Logout'),
-                style: FilledButton.styleFrom(
-                  backgroundColor: theme.colorScheme.error,
-                  foregroundColor: theme.colorScheme.onError,
-                ),
+                style: FilledButton.styleFrom(backgroundColor: theme.colorScheme.error, foregroundColor: theme.colorScheme.onError),
               ),
             ],
           );
