@@ -3,7 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:myapp/constants.dart';
 import 'package:myapp/providers/cart_provider.dart';
-import 'package:myapp/screens/admin/admin_home_screen.dart';
+import 'package:myapp/screens/login_screen.dart';
 import 'package:myapp/screens/user/cart_screen.dart';
 import 'package:myapp/screens/user/my_orders_screen.dart'; 
 import 'package:myapp/widgets/product_card.dart';
@@ -42,35 +42,50 @@ class _HomeScreenState extends State<HomeScreen> {
       } catch (e) {
         debugPrint('Error getting user role: $e');
       }
+    } else {
+      _navigateToLogin();
+    }
+  }
+
+  void _navigateToLogin() {
+     if (mounted) {
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (context) => const LoginScreen()),
+          (route) => false,
+        );
+      }
+  }
+
+  Future<void> _logout() async {
+    try {
+      await FirebaseAuth.instance.signOut();
+      _navigateToLogin();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to log out: ${e.toString()}')),
+        );
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+
+    if (_userRole == null) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          _userRole == 'admin' ? 'Admin Panel' : 'KZL Shop',
+          'KZL Shop',
           style: theme.textTheme.titleLarge?.copyWith(
             color: theme.colorScheme.onPrimary,
           ),
         ),
         actions: [
-          if (_userRole == 'admin')
-            IconButton(
-              tooltip: 'Admin Dashboard',
-              icon: const Icon(Icons.dashboard),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const AdminHomeScreen(),
-                  ),
-                );
-              },
-            ),
-          // My Orders Button
           IconButton(
             tooltip: 'My Orders',
             icon: const Icon(Icons.receipt_long),
@@ -100,6 +115,11 @@ class _HomeScreenState extends State<HomeScreen> {
             onPressed: () {
               widget.pageController.animateToPage(3, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
             },
+          ),
+          IconButton(
+            tooltip: 'Logout',
+            icon: const Icon(Icons.logout),
+            onPressed: _logout,
           ),
         ],
       ),

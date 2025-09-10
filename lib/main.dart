@@ -6,7 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:myapp/firebase_options.dart';
 import 'package:myapp/widgets/auth_wrapper.dart';
 import 'package:myapp/providers/cart_provider.dart';
-import 'package:myapp/providers/order_provider.dart'; 
+import 'package:myapp/providers/order_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -18,7 +18,7 @@ void main() async {
       providers: [
         ChangeNotifierProvider(create: (context) => ThemeProvider()),
         ChangeNotifierProvider(create: (context) => CartProvider()),
-        ChangeNotifierProvider(create: (context) => OrderProvider()), 
+        ChangeNotifierProvider(create: (context) => OrderProvider()),
       ],
       child: const MyApp(),
     ),
@@ -26,7 +26,7 @@ void main() async {
 }
 
 class ThemeProvider with ChangeNotifier {
-  ThemeMode _themeMode = ThemeMode.light; 
+  ThemeMode _themeMode = ThemeMode.light;
 
   ThemeMode get themeMode => _themeMode;
 

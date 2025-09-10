@@ -210,6 +210,7 @@ class _SignupScreenState extends State<SignupScreen> {
         'township': _selectedTownship,
         'role': 'user', // Default role
         'createdAt': FieldValue.serverTimestamp(),
+        'profilePicture': null,
       });
 
       if (!mounted) return;

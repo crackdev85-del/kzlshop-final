@@ -32,7 +32,7 @@ class CartProvider with ChangeNotifier {
       _items.update(
         product.id,
         (existingCartItem) => existingCartItem.copyWith(
-          quantity: existingCartItem.quantity + quantity,
+          quantity: quantity,
         ),
       );
     } else {
@@ -110,4 +110,3 @@ class CartProvider with ChangeNotifier {
     notifyListeners();
   }
 }
-

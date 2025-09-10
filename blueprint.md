@@ -1,78 +1,68 @@
-
-# KZL Shop Blueprint
+# KZL Shop App Blueprint
 
 ## Overview
 
-KZL Shop is a modern e-commerce application built with Flutter and Firebase. It provides a seamless shopping experience for users, allowing them to browse products, add items to their cart, and place orders. The application also includes an admin panel for managing products and orders.
+This document outlines the architecture, features, and design of the KZL Shop mobile application. The app is a Flutter-based e-commerce platform that allows users to browse products, add them to a cart, and place orders. It also includes an admin panel for managing products and orders.
 
-## Implemented Features
-
-### Style and Design
-
-*   **Theming:** The application features a custom theme with a light and dark mode.
-    *   **Light Theme:** Uses a baby pink background, sky blue primary color, and pink secondary color.
-    *   **Dark Theme:** Uses a dark grey background with the same sky blue and pink accent colors.
-*   **Typography:** Utilizes Google Fonts for a modern and readable typography.
-    *   **Oswald:** for headings.
-    *   **Roboto:** for titles.
-    *   **Open Sans:** for body text.
-*   **UI Components:**
-    *   Custom-styled buttons, app bars, and other UI elements to match the theme.
-    *   Consistent use of icons and imagery to enhance user experience.
+## Core Features
 
 ### User Features
 
-*   **Authentication:**
-    *   Users can sign up and log in using email and password.
-    *   Authentication state is managed to provide a seamless experience.
-*   **Product Browsing:**
-    *   Users can view a list of products with their names, prices, and images.
-*   **Shopping Cart:**
-    *   Users can add products to their shopping cart.
-    *   The cart provider manages the state of the shopping cart.
-*   **Order Placement:**
-    *   Users can place orders for the items in their cart.
-    *   Order details are stored in Firestore.
-*   **User Profile:**
-    *   A dedicated profile screen for users to view their information.
+- **Authentication**: Users can sign up and log in using their email and password.
+- **Product Browsing**: Users can view a grid of available products on the home screen.
+- **Product Details**: Tapping on a product reveals a details screen with a larger image, description, and price.
+- **Shopping Cart**: Users can add products to a shopping cart and view the items in their cart.
+- **Order Placement**: Users can place orders from the items in their cart.
+- **Order History**: Users can view a list of their past orders.
+- **Profile Management**: Users can view and update their profile information, including their username, address, and profile picture.
+- **Dark Mode**: Users can toggle between light and dark themes.
 
 ### Admin Features
 
-*   **Admin Panel:**
-    *   A dedicated admin panel for managing the application.
-*   **Product Management:**
-    *   Admins can add, edit, and delete products.
-    *   Product information is stored in Firestore.
-*   **Order Management:**
-    *   Admins can view and manage customer orders.
-    *   Order details can be updated (e.g., changing the order status).
+- **Admin Panel**: Admins have access to a separate dashboard to manage the application.
+- **Product Management**: Admins can add, edit, and delete products.
+- **Order Management**: Admins can view and manage user orders.
+- **Category Management**: Admins can add, edit, and delete product categories.
+- **Township Management**: Admins can add, edit, and delete townships for delivery.
+- **Announcement Management**: Admins can create and manage announcements that are displayed to users.
 
-## Refactoring: Order Model
+## Design and Theming
 
-I have refactored the application to use a more consistent and robust data model for orders. The original `Order` model has been replaced with a new `OrderItem` model to better represent the structure of an order and its contents.
+- **Shop Name**: The official name of the shop is "KZL Shop", which is displayed in the app bar.
+- **Color Scheme**: The application uses a consistent color scheme for both light and dark themes, derived from a primary seed color.
+- **Typography**: The app uses a consistent set of text styles for headings, titles, and body text to ensure a readable and visually appealing interface.
+- **Layout**: The layout is designed to be clean and intuitive, with a focus on user experience.
 
-**Changes Made:**
+## Technical Architecture
 
-*   **`order.dart`:** The original `Order` model has been removed and is no longer in use.
-*   **`order_item.dart`:**
-    *   A new `OrderItem` model has been introduced to represent an individual order.
-    *   This model includes a list of `OrderProduct` objects, each representing a product within the order.
-    *   A `fromFirestore` factory method has been added to facilitate the creation of `OrderItem` objects from Firestore documents.
-*   **`order_provider.dart`:**
-    *   The `OrderProvider` has been updated to use the new `OrderItem` model.
-    *   The `addOrder` method now takes a list of `CartItem` objects and a total amount to create a new order.
-    *   The `updateOrderStatus` method has been updated to work with the new `OrderItem` model.
-*   **Screen Updates:**
-    *   **`order_details_screen.dart` (Admin & User):** These screens have been updated to use the `OrderItem` model, ensuring that order details are displayed correctly.
-    *   **`checkout_screen.dart`:** The checkout process has been updated to create orders using the new `OrderProvider` and `OrderItem` model.
-    *   **`my_orders_screen.dart`:** This screen now fetches and displays a list of the user's orders using the `OrderItem` model.
-*   **Widget Updates:**
-    *   **`order_item_card.dart`:** This widget has been updated to display order information using the `OrderItem` model.
+- **Frontend**: The application is built with Flutter, a cross-platform UI toolkit.
+- **Backend**: The backend is powered by Firebase, utilizing the following services:
+    - **Firestore**: For storing data such as products, orders, users, and categories.
+    - **Authentication**: For managing user authentication.
+    - **Firebase Storage**: Although not currently used for storing images directly (they are stored as Base64 in Firestore), it can be integrated in the future for more efficient image handling.
+- **State Management**: The application uses the `provider` package for state management, particularly for the shopping cart and theme.
+- **Navigation**: The app uses a combination of `MaterialPageRoute` for basic navigation and a `PageController` for the main bottom navigation bar.
+- **Dependencies**:
+    - `cloud_firestore`: For interacting with Firestore.
+    - `firebase_auth`: For user authentication.
+    - `provider`: For state management.
+    - `image_picker`: For picking images from the camera or gallery.
+    - `url_launcher`: For opening external links, such as Google Maps.
 
-**Outcome:**
+## Current Task: Implement User Profile Picture
 
-This refactoring has resulted in a more organized and maintainable codebase. The new `OrderItem` model provides a clearer representation of the data, and the application is now more robust and less prone to errors related to order management.
+### Plan
 
-## Current Plan
-
-All planned refactoring and bug fixes have been completed. The application is now in a stable state with no known issues. I am ready for the next set of instructions.
+1.  **Add `image_picker` dependency**: Add the `image_picker` package to `pubspec.yaml` to enable image selection from the camera.
+2.  **Update Profile Screen UI**:
+    - Add a `CircleAvatar` to display the user's profile picture.
+    - Add an `IconButton` with a camera icon to allow the user to take a new photo.
+    - Show a default person icon if no profile picture is available.
+    - Display a loading indicator while the image is being uploaded.
+3.  **Implement Image Picking and Uploading Logic**:
+    - When the camera icon is tapped, use `ImagePicker` to open the device's camera.
+    - After an image is captured, convert the image file to a Base64 encoded string.
+    - Update the user's document in the `users` collection in Firestore, saving the Base64 string to the `profilePicture` field.
+4.  **Display the Profile Picture**:
+    - In the `ProfileScreen`, fetch the `profilePicture` field from the user's document.
+    - If the field contains a Base64 string, decode it and display the image in the `CircleAvatar`.

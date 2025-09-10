@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:myapp/screens/login_screen.dart';
+import 'package:myapp/screens/user/edit_profile_screen.dart';
 
 class ProfileTab extends StatefulWidget {
   const ProfileTab({super.key});
@@ -182,10 +183,14 @@ class _ProfileTabState extends State<ProfileTab> {
       children: [
         ElevatedButton.icon(
           onPressed: () {
-            // TODO: Implement Edit Profile screen navigation
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Edit Profile coming soon!')),
-            );
+            Navigator.of(context).push(
+              MaterialPageRoute(builder: (context) => const EditProfileScreen()),
+            ).then((_) {
+              // Refresh the profile data after returning from the edit screen
+              setState(() {
+                _userFuture = _fetchUserData();
+              });
+            });
           },
           icon: const Icon(Icons.edit),
           label: const Text('Edit Profile'),
