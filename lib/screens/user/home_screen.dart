@@ -8,7 +8,7 @@ import 'package:myapp/providers/cart_provider.dart';
 import 'package:myapp/screens/login_screen.dart';
 import 'package:myapp/screens/user/cart_screen.dart';
 import 'package:myapp/screens/user/my_orders_screen.dart';
-import 'package:myapp/widgets/product_card.dart';
+import 'package:myapp/widgets/product_grid.dart';
 import 'package:provider/provider.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -208,53 +208,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildProductGrid() {
-    final theme = Theme.of(context);
-    Query productsQuery = FirebaseFirestore.instance
-        .collection(productsCollectionPath)
-        .orderBy('name'); // Sort products by name
 
-    if (_selectedCategoryId != null) {
-      productsQuery = productsQuery.where(Constants.productCategoryId, isEqualTo: _selectedCategoryId);
-    }
-
-    return StreamBuilder<QuerySnapshot>(
-      stream: productsQuery.snapshots(),
-      builder: (context, snapshot) {
-        if (snapshot.hasError) {
-          return Center(child: Text('Something went wrong', style: theme.textTheme.bodyMedium));
-        }
-
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        }
-
-        if (snapshot.data!.docs.isEmpty) {
-          return Center(
-            child: Text(
-              _selectedCategoryId == null ? 'No products available right now.' : 'No products in this category.',
-              style: theme.textTheme.bodyMedium,
-            ),
-          );
-        }
-
-        return GridView.builder(
-          padding: const EdgeInsets.all(16.0),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            crossAxisSpacing: 16.0,
-            mainAxisSpacing: 16.0,
-            childAspectRatio: 0.75,
-          ),
-          itemCount: snapshot.data!.docs.length,
-          itemBuilder: (context, index) {
-            final productDoc = snapshot.data!.docs[index];
-            return ProductCard(product: productDoc);
-          },
-        );
-      },
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -311,7 +265,16 @@ class _HomeScreenState extends State<HomeScreen> {
             padding: const EdgeInsets.only(left: 16.0, top: 16.0),
             child: Text(
               "Categories",
-              style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+              style: theme.textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.bold,
+                shadows: [
+                  Shadow(
+                    blurRadius: 10.0,
+                    color: Colors.black.withOpacity(0.3),
+                    offset: const Offset(5.0, 5.0),
+                  ),
+                ],
+              ),
             ),
           ),
           _buildCategoryCarousel(),
@@ -319,10 +282,19 @@ class _HomeScreenState extends State<HomeScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
             child: Text(
               "Products",
-              style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+              style: theme.textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.bold,
+                shadows: [
+                  Shadow(
+                    blurRadius: 10.0,
+                    color: Colors.black.withOpacity(0.3),
+                    offset: const Offset(5.0, 5.0),
+                  ),
+                ],
+              ),
             ),
           ),
-          Expanded(child: _buildProductGrid()),
+          Expanded(child: ProductGrid(categoryId: _selectedCategoryId)),
         ],      ),
     );
   }

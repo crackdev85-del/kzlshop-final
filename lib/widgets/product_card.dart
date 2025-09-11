@@ -78,8 +78,8 @@ class ProductCard extends StatelessWidget {
                     style: theme.textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+                    maxLines: 2, // Allow up to 2 lines
+                    overflow: TextOverflow.ellipsis, // Add ellipsis if text overflows
                   ),
                   const SizedBox(height: 4),
                   Text(

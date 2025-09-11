@@ -33,7 +33,7 @@ class OrderDetailsScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildDetailRow(theme, Icons.receipt, 'Order ID', order.id),
+                    _buildDetailRow(theme, Icons.receipt, 'Order Number', order.orderNumber.toString()),
                     const Divider(height: 24),
                     _buildDetailRow(theme, Icons.calendar_today, 'Date', formattedDate),
                     const SizedBox(height: 8),
