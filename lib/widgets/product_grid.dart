@@ -6,7 +6,7 @@ import 'package:myapp/widgets/product_card.dart';
 
 class ProductGrid extends StatefulWidget {
   final String? categoryId;
-  const ProductGrid({Key? key, this.categoryId}) : super(key: key);
+  const ProductGrid({super.key, this.categoryId});
 
   @override
   _ProductGridState createState() => _ProductGridState();

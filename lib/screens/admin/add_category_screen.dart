@@ -6,6 +6,8 @@ import 'package:provider/provider.dart';
 import '../../providers/category_provider.dart';
 
 class AddCategoryScreen extends StatefulWidget {
+  const AddCategoryScreen({super.key});
+
   @override
   _AddCategoryScreenState createState() => _AddCategoryScreenState();
 }

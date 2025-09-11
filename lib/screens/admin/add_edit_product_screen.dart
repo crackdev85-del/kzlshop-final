@@ -308,7 +308,7 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
                     ),
                     const SizedBox(height: 24),
                     DropdownButtonFormField<String>(
-                      value: _selectedCategoryId,
+                      initialValue: _selectedCategoryId,
                       hint: const Text('Select Category'),
                       isExpanded: true,
                       items: _categories.map((Category category) {
@@ -356,10 +356,12 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
                             keyboardType:
                                 const TextInputType.numberWithOptions(decimal: true),
                             validator: (value) {
-                              if (value == null || value.isEmpty)
+                              if (value == null || value.isEmpty) {
                                 return 'Please enter the price';
-                              if (double.tryParse(value) == null)
+                              }
+                              if (double.tryParse(value) == null) {
                                 return 'Please enter a valid number';
+                              }
                               return null;
                             },
                           ),
@@ -373,10 +375,12 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
                                 border: OutlineInputBorder()),
                             keyboardType: TextInputType.number,
                             validator: (value) {
-                              if (value == null || value.isEmpty)
+                              if (value == null || value.isEmpty) {
                                 return 'Please enter the quantity';
-                              if (int.tryParse(value) == null)
+                              }
+                              if (int.tryParse(value) == null) {
                                 return 'Please enter a valid whole number';
+                              }
                               return null;
                             },
                           ),
