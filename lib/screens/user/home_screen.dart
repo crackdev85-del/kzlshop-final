@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -5,7 +7,7 @@ import 'package:myapp/constants.dart';
 import 'package:myapp/providers/cart_provider.dart';
 import 'package:myapp/screens/login_screen.dart';
 import 'package:myapp/screens/user/cart_screen.dart';
-import 'package:myapp/screens/user/my_orders_screen.dart'; 
+import 'package:myapp/screens/user/my_orders_screen.dart';
 import 'package:myapp/widgets/product_card.dart';
 import 'package:provider/provider.dart';
 
@@ -19,6 +21,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   String? _userRole;
+  String? _selectedCategoryId;
 
   @override
   void initState() {
@@ -40,7 +43,7 @@ class _HomeScreenState extends State<HomeScreen> {
           });
         }
       } catch (e) {
-        debugPrint('Error getting user role: $e');
+        debugPrint('Error getting user role: \$e');
       }
     } else {
       _navigateToLogin();
@@ -48,12 +51,12 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _navigateToLogin() {
-     if (mounted) {
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (context) => const LoginScreen()),
-          (route) => false,
-        );
-      }
+    if (mounted) {
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (context) => const LoginScreen()),
+        (route) => false,
+      );
+    }
   }
 
   Future<void> _logout() async {
@@ -63,10 +66,194 @@ class _HomeScreenState extends State<HomeScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to log out: ${e.toString()}')),
+          SnackBar(content: Text('Failed to log out: \${e.toString()}')),
         );
       }
     }
+  }
+
+  Widget _buildCategoryCarousel() {
+    final theme = Theme.of(context);
+    return SizedBox(
+      height: 110,
+      child: StreamBuilder<QuerySnapshot>(
+        stream: FirebaseFirestore.instance.collection(categoriesCollectionPath).snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            return const Center(child: Text('Error loading categories'));
+          }
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          final categories = snapshot.data!.docs;
+
+          return ListView.builder(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            itemCount: categories.length + 1, // +1 for "All"
+            itemBuilder: (context, index) {
+              // "All" Category Button
+              if (index == 0) {
+                final isSelected = _selectedCategoryId == null;
+                return Padding(
+                  padding: const EdgeInsets.only(right: 12.0),
+                  child: GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _selectedCategoryId = null;
+                      });
+                    },
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          width: 64,
+                          height: 64,
+                          decoration: BoxDecoration(
+                            color: isSelected ? theme.colorScheme.primary.withOpacity(0.2) : theme.colorScheme.surface,
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: isSelected ? theme.colorScheme.primary : Colors.grey.shade300,
+                              width: 1.5,
+                            ),
+                          ),
+                          child: Icon(Icons.apps, color: theme.colorScheme.primary),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          "All",
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }
+
+              final categoryDoc = categories[index - 1];
+              final categoryData = categoryDoc.data() as Map<String, dynamic>;
+              final String name = categoryData['name'] ?? 'No Name';
+              final String imageUrl = categoryData['imageUrl'] ?? '';
+              final bool isSelected = _selectedCategoryId == categoryDoc.id;
+
+              Widget imageWidget;
+              const double imageSize = 64;
+
+              if (imageUrl.startsWith('data:image')) {
+                try {
+                  final UriData? data = Uri.parse(imageUrl).data;
+                  final imageBytes = data!.contentAsBytes();
+                  imageWidget = Image.memory(
+                    imageBytes,
+                    fit: BoxFit.cover,
+                    width: imageSize,
+                    height: imageSize,
+                  );
+                } catch (e) {
+                  imageWidget = const Icon(Icons.broken_image, size: imageSize, color: Colors.grey);
+                }
+              } else {
+                imageWidget = const Icon(Icons.category, size: imageSize, color: Colors.grey);
+              }
+
+              return Padding(
+                padding: const EdgeInsets.only(right: 12.0),
+                child: GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _selectedCategoryId = categoryDoc.id;
+                    });
+                  },
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        width: imageSize + 4,
+                        height: imageSize + 4,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: isSelected ? theme.colorScheme.primary : Colors.transparent,
+                            width: 2,
+                          ),
+                        ),
+                        child: ClipOval(child: imageWidget),
+                      ),
+                      const SizedBox(height: 8),
+                      SizedBox(
+                        width: imageSize,
+                        child: Text(
+                          name,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal
+                          ),
+                          textAlign: TextAlign.center,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildProductGrid() {
+    final theme = Theme.of(context);
+    Query productsQuery = FirebaseFirestore.instance
+        .collection(productsCollectionPath)
+        .orderBy('name'); // Sort products by name
+
+    if (_selectedCategoryId != null) {
+      productsQuery = productsQuery.where(Constants.productCategoryId, isEqualTo: _selectedCategoryId);
+    }
+
+    return StreamBuilder<QuerySnapshot>(
+      stream: productsQuery.snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return Center(child: Text('Something went wrong', style: theme.textTheme.bodyMedium));
+        }
+
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        if (snapshot.data!.docs.isEmpty) {
+          return Center(
+            child: Text(
+              _selectedCategoryId == null ? 'No products available right now.' : 'No products in this category.',
+              style: theme.textTheme.bodyMedium,
+            ),
+          );
+        }
+
+        return GridView.builder(
+          padding: const EdgeInsets.all(16.0),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            crossAxisSpacing: 16.0,
+            mainAxisSpacing: 16.0,
+            childAspectRatio: 0.75,
+          ),
+          itemCount: snapshot.data!.docs.length,
+          itemBuilder: (context, index) {
+            final productDoc = snapshot.data!.docs[index];
+            return ProductCard(product: productDoc);
+          },
+        );
+      },
+    );
   }
 
   @override
@@ -83,6 +270,7 @@ class _HomeScreenState extends State<HomeScreen> {
           'KZL Shop',
           style: theme.textTheme.titleLarge?.copyWith(
             color: theme.colorScheme.onPrimary,
+            fontWeight: FontWeight.bold,
           ),
         ),
         actions: [
@@ -102,19 +290,12 @@ class _HomeScreenState extends State<HomeScreen> {
               isLabelVisible: cart.itemCount > 0,
               child: IconButton(
                 tooltip: 'My Cart',
-                icon: const Icon(Icons.shopping_cart),
+                icon: const Icon(Icons.shopping_cart_outlined),
                 onPressed: () {
-                   Navigator.push(context, MaterialPageRoute(builder: (context) => const CartScreen()));
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => const CartScreen()));
                 },
               ),
             ),
-          ),
-          IconButton(
-            tooltip: 'My Profile',
-            icon: const Icon(Icons.person),
-            onPressed: () {
-              widget.pageController.animateToPage(3, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
-            },
           ),
           IconButton(
             tooltip: 'Logout',
@@ -123,49 +304,26 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      body: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance
-            .collection(productsCollectionPath)
-            .snapshots(),
-        builder: (context, snapshot) {
-          if (snapshot.hasError) {
-            return Center(
-              child: Text(
-                'Something went wrong',
-                style: theme.textTheme.bodyMedium,
-              ),
-            );
-          }
-
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          if (snapshot.data!.docs.isEmpty) {
-            return Center(
-              child: Text(
-                'No products available right now.',
-                style: theme.textTheme.bodyMedium,
-              ),
-            );
-          }
-
-          return GridView.builder(
-            padding: const EdgeInsets.all(16.0),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              crossAxisSpacing: 16.0,
-              mainAxisSpacing: 16.0,
-              childAspectRatio: 0.75,
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(left: 16.0, top: 16.0),
+            child: Text(
+              "Categories",
+              style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
             ),
-            itemCount: snapshot.data!.docs.length,
-            itemBuilder: (context, index) {
-              final productDoc = snapshot.data!.docs[index];
-              return ProductCard(product: productDoc);
-            },
-          );
-        },
-      ),
+          ),
+          _buildCategoryCarousel(),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            child: Text(
+              "Products",
+              style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+            ),
+          ),
+          Expanded(child: _buildProductGrid()),
+        ],      ),
     );
   }
 }
