@@ -252,10 +252,10 @@ class _SignupScreenState extends State<SignupScreen> {
               const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: _signup,
-                child: const Text('Sign Up'),
                  style: ElevatedButton.styleFrom(
                   minimumSize: const Size(double.infinity, 50),
                 ),
+                child: const Text('Sign Up'),
               ),
             ],
           ),

@@ -1,6 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:myapp/providers/category_provider.dart';
 import 'package:provider/provider.dart';
 
 import 'package:myapp/firebase_options.dart';
@@ -19,6 +20,7 @@ void main() async {
         ChangeNotifierProvider(create: (context) => ThemeProvider()),
         ChangeNotifierProvider(create: (context) => CartProvider()),
         ChangeNotifierProvider(create: (context) => OrderProvider()),
+        ChangeNotifierProvider(create: (context) => CategoryProvider()),
       ],
       child: const MyApp(),
     ),

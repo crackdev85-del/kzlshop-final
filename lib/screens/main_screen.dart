@@ -49,16 +49,7 @@ class _MainScreenState extends State<MainScreen> {
     ];
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('KZL Shop'),
-        actions: [
-          IconButton(
-            icon: Icon(themeProvider.themeMode == ThemeMode.dark ? Icons.light_mode : Icons.dark_mode),
-            onPressed: () => themeProvider.toggleTheme(),
-            tooltip: 'Toggle Theme',
-          ),
-        ],
-      ),
+     
       body: PageView(
         controller: _pageController,
         onPageChanged: (index) {

@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:myapp/screens/admin/announcements_tab.dart';
+import 'package:myapp/screens/admin/categories_tab.dart';
 import 'package:myapp/screens/admin/orders_tab.dart';
 import 'package:myapp/screens/admin/products_tab.dart';
 import 'package:myapp/screens/admin/reports_tab.dart';
@@ -22,7 +23,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 7, vsync: this);
+    _tabController = TabController(length: 8, vsync: this);
   }
 
   @override
@@ -55,6 +56,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen>
           unselectedLabelColor: theme.colorScheme.onPrimary.withAlpha(178),
           tabs: const [
             Tab(icon: Icon(Icons.fastfood), text: 'Products'),
+            Tab(icon: Icon(Icons.category), text: 'Categories'),
             Tab(icon: Icon(Icons.receipt), text: 'Orders'),
             Tab(icon: Icon(Icons.people), text: 'Users'),
             Tab(icon: Icon(Icons.location_city), text: 'Townships'),
@@ -68,6 +70,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen>
         controller: _tabController,
         children: const [
           ProductsTab(),
+          CategoriesTab(),
           OrdersTab(),
           UsersTab(),
           TownshipsTab(),
