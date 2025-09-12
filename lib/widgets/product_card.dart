@@ -20,6 +20,7 @@ class ProductCard extends StatelessWidget {
 
     final imageUrl = productData[Constants.productImageUrl] as String?;
     final name = productData[Constants.productName] as String? ?? 'No Name';
+    final category = productData['category'] as String? ?? 'Uncategorized'; // Used string literal
     final price = (productData[Constants.productPrice] ?? 0).toDouble();
 
     return GestureDetector(
@@ -30,18 +31,28 @@ class ProductCard extends StatelessWidget {
           ),
         );
       },
-      child: Card(
-        clipBehavior: Clip.antiAlias,
-        elevation: 4.0,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Expanded(
-              child: Hero(
-                tag: 'product-image-${product.id}',
-                child: (imageUrl != null && imageUrl.isNotEmpty)
-                    ? (imageUrl.startsWith('data:image'))
+      child: Container(
+        decoration: BoxDecoration(
+          color: theme.cardColor,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(
+                child: Hero(
+                  tag: 'product-image-${product.id}',
+                  child: (imageUrl != null && imageUrl.isNotEmpty)
+                      ? (imageUrl.startsWith('data:image'))
                           ? Image.memory(
                               base64.decode(imageUrl.split(',').last),
                               fit: BoxFit.cover,
@@ -49,80 +60,64 @@ class ProductCard extends StatelessWidget {
                           : Image.network(
                               imageUrl,
                               fit: BoxFit.cover,
-                              loadingBuilder:
-                                  (context, child, loadingProgress) {
-                                    if (loadingProgress == null) return child;
-                                    return const Center(
-                                      child: CircularProgressIndicator(),
-                                    );
-                                  },
+                              loadingBuilder: (context, child, loadingProgress) {
+                                if (loadingProgress == null) return child;
+                                return Center(
+                                  child: CircularProgressIndicator(
+                                    value: loadingProgress.expectedTotalBytes != null
+                                        ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
+                                        : null,
+                                  ),
+                                );
+                              },
                               errorBuilder: (context, error, stackTrace) =>
-                                  const Icon(Icons.broken_image, size: 40),
+                                  const Icon(Icons.broken_image, size: 40, color: Colors.grey),
                             )
-                    : Container(
-                        color: Colors.grey[200],
-                        child: const Icon(
-                          Icons.shopping_bag,
-                          color: Colors.grey,
+                      : Container(
+                          color: Colors.grey[200],
+                          child: const Icon(
+                            Icons.shopping_bag,
+                            size: 40,
+                            color: Colors.grey,
+                          ),
                         ),
-                      ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    name,
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                    maxLines: 2, // Allow up to 2 lines
-                    overflow: TextOverflow.ellipsis, // Add ellipsis if text overflows
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '${price.toStringAsFixed(2)} Kyat',
-                    style: theme.textTheme.bodyLarge?.copyWith(
-                      color: theme.colorScheme.primary,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 4.0,
-                vertical: 4.0,
-              ),
-              child: ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),
-                onPressed: () {
-                  // FIX: Pass the entire product object as a single positional argument.
-                  cart.addItem(product);
-
-                  ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('$name has been added to the cart!'),
-                      duration: const Duration(seconds: 2),
-                      action: SnackBarAction(
-                        label: 'UNDO',
-                        onPressed: () {
-                          cart.removeSingleItem(product.id);
-                        },
+              ),
+              Padding(
+                padding: const EdgeInsets.all(10.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      name,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      category,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.textTheme.bodySmall?.color?.withOpacity(0.7),
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      '${price.toStringAsFixed(0)} Kyat',
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        color: theme.colorScheme.primary,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                  );
-                },
-                icon: const Icon(Icons.add_shopping_cart, size: 18),
-                label: const Text('Add to Cart'),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

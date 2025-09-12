@@ -7,7 +7,6 @@ import 'package:moegyi/screens/login_screen.dart';
 import 'package:moegyi/constants.dart';
 import 'dart:developer' as developer;
 
-
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
 
@@ -56,7 +55,7 @@ class _SignupScreenState extends State<SignupScreen> {
     }
   }
 
-    Future<void> _getLocation() async {
+  Future<void> _getLocation() async {
     if (!mounted) return;
 
     setState(() {
@@ -84,23 +83,25 @@ class _SignupScreenState extends State<SignupScreen> {
       final position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
       );
-      
+
       final coordinates = '${position.latitude}, ${position.longitude}';
 
       // Get readable address from coordinates
       String readableAddress = 'Unable to fetch address';
       try {
-          List<Placemark> placemarks = await placemarkFromCoordinates(
-            position.latitude,
-            position.longitude,
-          );
+        List<Placemark> placemarks = await placemarkFromCoordinates(
+          position.latitude,
+          position.longitude,
+        );
 
-          if (placemarks.isNotEmpty) {
-            Placemark place = placemarks[0];
-            readableAddress = '${place.street}, ${place.subLocality}, ${place.locality}';
-          }
+        if (placemarks.isNotEmpty) {
+          Placemark place = placemarks[0];
+          readableAddress =
+              '${place.street}, ${place.subLocality}, ${place.locality}';
+        }
       } catch (e) {
-          developer.log('Could not get placemark', name: 'moegyi.signup', error: e);
+        developer.log('Could not get placemark',
+            name: 'moegyi.signup', error: e);
       }
 
       if (mounted) {
@@ -109,7 +110,6 @@ class _SignupScreenState extends State<SignupScreen> {
           _locationController.text = coordinates;
         });
       }
-
     } catch (e) {
       _showError("Failed to get location: $e");
     } finally {
@@ -126,7 +126,8 @@ class _SignupScreenState extends State<SignupScreen> {
 
     if (_formKey.currentState!.validate()) {
       try {
-        UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
+        UserCredential userCredential =
+            await _auth.createUserWithEmailAndPassword(
           email: _emailController.text.trim(),
           password: _passwordController.text.trim(),
         );
@@ -135,13 +136,13 @@ class _SignupScreenState extends State<SignupScreen> {
 
         final locationString = _locationController.text.trim();
         GeoPoint? locationGeoPoint;
-        if(locationString.contains(',')) {
-            final parts = locationString.split(',');
-            final lat = double.tryParse(parts[0].trim());
-            final lon = double.tryParse(parts[1].trim());
-            if(lat != null && lon != null) {
-                locationGeoPoint = GeoPoint(lat, lon);
-            }
+        if (locationString.contains(',')) {
+          final parts = locationString.split(',');
+          final lat = double.tryParse(parts[0].trim());
+          final lon = double.tryParse(parts[1].trim());
+          if (lat != null && lon != null) {
+            locationGeoPoint = GeoPoint(lat, lon);
+          }
         }
 
         await _firestore.collection(usersCollectionPath).doc(userCredential.user!.uid).set({
@@ -183,12 +184,14 @@ class _SignupScreenState extends State<SignupScreen> {
               TextFormField(
                 controller: _usernameController,
                 decoration: const InputDecoration(labelText: 'Username'),
-                validator: (value) => value!.isEmpty ? 'Enter a username' : null,
+                validator: (value) =>
+                    value!.isEmpty ? 'Enter a username' : null,
               ),
               TextFormField(
                 controller: _shopNameController,
                 decoration: const InputDecoration(labelText: 'Shop Name'),
-                validator: (value) => value!.isEmpty ? 'Enter a shop name' : null,
+                validator: (value) =>
+                    value!.isEmpty ? 'Enter a shop name' : null,
               ),
               TextFormField(
                 controller: _emailController,
@@ -203,7 +206,9 @@ class _SignupScreenState extends State<SignupScreen> {
                 decoration: InputDecoration(
                   labelText: 'Password',
                   suffixIcon: IconButton(
-                    icon: Icon(_isPasswordVisible ? Icons.visibility : Icons.visibility_off),
+                    icon: Icon(_isPasswordVisible
+                        ? Icons.visibility
+                        : Icons.visibility_off),
                     onPressed: () {
                       setState(() {
                         _isPasswordVisible = !_isPasswordVisible;
@@ -212,15 +217,16 @@ class _SignupScreenState extends State<SignupScreen> {
                   ),
                 ),
                 obscureText: !_isPasswordVisible,
-                validator: (value) =>
-                    value!.length < 6 ? 'Password must be at least 6 characters' : null,
+                validator: (value) => value!.length < 6
+                    ? 'Password must be at least 6 characters'
+                    : null,
               ),
               TextFormField(
                 controller: _phoneController,
                 decoration: const InputDecoration(labelText: 'Phone Number'),
                 keyboardType: TextInputType.phone,
               ),
-                TextFormField(
+              TextFormField(
                 controller: _addressController,
                 decoration: const InputDecoration(labelText: 'Address'),
               ),
@@ -238,21 +244,21 @@ class _SignupScreenState extends State<SignupScreen> {
                 readOnly: true,
               ),
               const SizedBox(height: 10),
-                if (_isFetchingLocation)
-                  const Center(child: CircularProgressIndicator())
-                else
-                  ElevatedButton.icon(
-                      onPressed: _getLocation,
-                      icon: const Icon(Icons.location_searching),
-                      label: const Text('Get Location'),
-                       style: ElevatedButton.stylefrom(
-                        minimumSize: const Size(double.infinity, 50),
-                      ),
+              if (_isFetchingLocation)
+                const Center(child: CircularProgressIndicator())
+              else
+                ElevatedButton.icon(
+                  onPressed: _getLocation,
+                  icon: const Icon(Icons.location_searching),
+                  label: const Text('Get Location'),
+                  style: ElevatedButton.stylefrom(
+                    minimumSize: const Size(double.infinity, 50),
                   ),
+                ),
               const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: _signup,
-                 style: ElevatedButton.styleFrom(
+                style: ElevatedButton.stylefrom(
                   minimumSize: const Size(double.infinity, 50),
                 ),
                 child: const Text('Sign Up'),

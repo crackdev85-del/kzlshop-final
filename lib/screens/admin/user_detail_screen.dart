@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:myapp/constants.dart';
+import 'package:moegyi/constants.dart';
 
 class UserDetailScreen extends StatefulWidget {
   final String userId;

@@ -10,89 +10,78 @@ class OrderDetailsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final formattedDate = DateFormat('dd-MM-yyyy, hh:mm a').format(order.dateTime);
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Order #${order.orderNumber}', style: TextStyle(color: theme.colorScheme.onPrimary)),
-        backgroundColor: theme.colorScheme.primary,
-        iconTheme: IconThemeData(color: theme.colorScheme.onPrimary),
+        title: Text('Order #${order.orderNumber}'),
+        backgroundColor: theme.primaryColor,
       ),
-      body: SingleChildScrollView(
+      body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Order Details', style: theme.textTheme.headlineSmall),
-            const SizedBox(height: 16),
-            Card(
-              elevation: 4,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildDetailRow(theme, Icons.receipt, 'Order Number', order.orderNumber.toString()),
-                    const Divider(height: 24),
-                    _buildDetailRow(theme, Icons.calendar_today, 'Date', formattedDate),
-                    const SizedBox(height: 8),
-                    _buildDetailRow(theme, Icons.info_outline, 'Status', order.status),
-                  ],
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Order Details',
+                style: theme.textTheme.headlineSmall,
+              ),
+              const SizedBox(height: 16),
+              Card(
+                elevation: 4,
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    children: [
+                      _buildDetailRow(context, 'Order Number', '#${order.orderNumber}'),
+                      _buildDetailRow(context, 'Order Date', DateFormat.yMMMd().format(order.dateTime)),
+                      _buildDetailRow(context, 'Total Amount', '${order.totalAmount.toStringAsFixed(2)} Kyat'),
+                      _buildDetailRow(context, 'Status', order.status),
+                    ],
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 24),
-            Text('Items', style: theme.textTheme.headlineSmall),
-            const SizedBox(height: 16),
-            ListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: order.products.length,
-              itemBuilder: (context, index) {
-                final item = order.products[index];
-                return Card(
-                  margin: const EdgeInsets.only(bottom: 8),
-                  elevation: 2,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                  child: ListTile(
-                    title: Text(item.name, style: theme.textTheme.titleMedium),
-                    subtitle: Text('Quantity: ${item.quantity}'),
-                    trailing: Text('${item.price.toStringAsFixed(2)} Kyat', style: theme.textTheme.bodyLarge),
-                  ),
-                );
-              },
-            ),
-            const Divider(height: 32),
-            Align(
-              alignment: Alignment.centerRight,
-              child: Text(
-                'Total: ${order.totalAmount.toStringAsFixed(2)} Kyat',
-                style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+              const SizedBox(height: 24),
+              Text(
+                'Items Ordered',
+                style: theme.textTheme.headlineSmall,
               ),
-            ),
-          ],
+              const SizedBox(height: 16),
+              ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: order.products.length,
+                itemBuilder: (context, index) {
+                  final item = order.products[index];
+                  return Card(
+                    elevation: 2,
+                    margin: const EdgeInsets.symmetric(vertical: 4),
+                    child: ListTile(
+                      title: Text(item.name),
+                      subtitle: Text('Quantity: ${item.quantity}'),
+                      trailing: Text('${item.price.toStringAsFixed(2)} Kyat'),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildDetailRow(ThemeData theme, IconData icon, String label, String value) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Icon(icon, size: 20, color: theme.colorScheme.secondary),
-        const SizedBox(width: 12),
-        Text('$label: ', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
-        Expanded(
-          child: Text(
-            value,
-            style: theme.textTheme.titleMedium,
-            textAlign: TextAlign.end,
-            softWrap: true,
-          ),
-        ),
-      ],
+  Widget _buildDetailRow(BuildContext context, String label, String value) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: theme.textTheme.titleMedium),
+          Text(value, style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+        ],
+      ),
     );
   }
 }
