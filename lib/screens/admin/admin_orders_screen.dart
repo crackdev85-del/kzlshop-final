@@ -1,10 +1,8 @@
-
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import 'package:moegyi/constants.dart';
-import 'package:moegyi/providers/order_provider.dart';
-import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart'; // Import url_launcher
 
 class AdminOrdersScreen extends StatelessWidget {
   const AdminOrdersScreen({super.key});
@@ -58,25 +56,53 @@ class AdminOrderCard extends StatefulWidget {
 class _AdminOrderCardState extends State<AdminOrderCard> {
   var _expanded = false;
 
+  void _showConfirmationDialog({
+    required BuildContext context,
+    required String title,
+    required String content,
+    required VoidCallback onConfirm,
+  }) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(title),
+        content: Text(content),
+        actions: <Widget>[
+          TextButton(
+            child: const Text('Cancel'),
+            onPressed: () {
+              Navigator.of(ctx).pop();
+            },
+          ),
+          TextButton(
+            child: const Text('Confirm'),
+            onPressed: () {
+              onConfirm();
+              Navigator.of(ctx).pop();
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final orderData = widget.orderSnapshot.data() as Map<String, dynamic>;
     final orderId = widget.orderSnapshot.id;
-    final String currentStatus = orderData['status'] ?? 'Order Placed';
-    final List<dynamic> products = orderData['products'] ?? [];
     final int orderNumber = orderData['orderNumber'] ?? 0;
-
-    final List<String> statusOptions = [
-      'Order Placed',
-      'Processing',
-      'Shipped',
-      'Delivered',
-      'Cancelled'
-    ];
+    final List<dynamic> products = orderData['products'] ?? [];
+    final String currentStatus = orderData['status'] ?? 'Order Placed';
 
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
       elevation: 3,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10),
+        side: currentStatus == 'Received'
+            ? const BorderSide(color: Colors.green, width: 2)
+            : BorderSide.none,
+      ),
       child: Column(
         children: [
           ListTile(
@@ -84,7 +110,7 @@ class _AdminOrderCardState extends State<AdminOrderCard> {
               'Order #$orderNumber',
               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
             ),
-            subtitle: UserEmailWidget(userId: orderData['userId']),
+            subtitle: UserInfoWidget(userId: orderData['userId']),
             trailing: IconButton(
               icon: Icon(_expanded ? Icons.expand_less : Icons.expand_more),
               onPressed: () {
@@ -103,9 +129,11 @@ class _AdminOrderCardState extends State<AdminOrderCard> {
                   Text(
                       'Order Date: ${DateFormat('dd/MM/yy hh:mm a').format((orderData['orderDate'] as Timestamp).toDate())}'),
                   const SizedBox(height: 8),
-                  Text('Total: ${orderData['totalAmount'].toStringAsFixed(2)} Kyat'),
+                  Text('Total: ${orderData['totalAmount'].toStringAsFixed(2)} Kyat',
+                      style: const TextStyle(fontWeight: FontWeight.bold)),
                   const SizedBox(height: 8),
-                  const Text('Products:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                  const Text('Products:',
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                   const SizedBox(height: 8),
                   ...products.map((prod) {
                     return Padding(
@@ -113,7 +141,8 @@ class _AdminOrderCardState extends State<AdminOrderCard> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text('${prod['name']} (x${prod['quantity']})'),
+                          Expanded(
+                              child: Text('${prod['name']} (x${prod['quantity']})')),
                           Text('${(prod['price']).toStringAsFixed(2)} Kyat'),
                         ],
                       ),
@@ -121,22 +150,56 @@ class _AdminOrderCardState extends State<AdminOrderCard> {
                   }),
                   const Divider(height: 24),
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      const Text('Update Status:', style: TextStyle(fontWeight: FontWeight.bold)),
-                      DropdownButton<String>(
-                        value: currentStatus,
-                        items: statusOptions.map<DropdownMenuItem<String>>((String value) {
-                          return DropdownMenuItem<String>(
-                            value: value,
-                            child: Text(value),
+                      TextButton.icon(
+                        icon: const Icon(Icons.check_circle_outline,
+                            color: Colors.green),
+                        label: const Text('Receive',
+                            style: TextStyle(color: Colors.green)),
+                        onPressed: () {
+                          _showConfirmationDialog(
+                            context: context,
+                            title: 'Receive Order',
+                            content:
+                                'Are you sure you want to mark this order as received?',
+                            onConfirm: () {
+                              FirebaseFirestore.instance
+                                  .collection(ordersCollectionPath)
+                                  .doc(orderId)
+                                  .update({'status': 'Received'});
+                            },
                           );
-                        }).toList(),
-                        onChanged: (String? newStatus) {
-                          if (newStatus != null && newStatus != currentStatus) {
-                             Provider.of<OrderProvider>(context, listen: false)
-                                .updateOrderStatus(orderId, newStatus);
-                          }
+                        },
+                      ),
+                      TextButton.icon(
+                        icon: const Icon(Icons.edit_outlined, color: Colors.blue),
+                        label: const Text('Edit', style: TextStyle(color: Colors.blue)),
+                        onPressed: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                                content: Text(
+                                    'Edit functionality is not yet implemented.')),
+                          );
+                        },
+                      ),
+                      TextButton.icon(
+                        icon: const Icon(Icons.delete_outline, color: Colors.red),
+                        label:
+                            const Text('Delete', style: TextStyle(color: Colors.red)),
+                        onPressed: () {
+                          _showConfirmationDialog(
+                            context: context,
+                            title: 'Delete Order',
+                            content:
+                                'Are you sure you want to delete this order? This action cannot be undone.',
+                            onConfirm: () {
+                              FirebaseFirestore.instance
+                                  .collection(ordersCollectionPath)
+                                  .doc(orderId)
+                                  .delete();
+                            },
+                          );
                         },
                       ),
                     ],
@@ -150,10 +213,22 @@ class _AdminOrderCardState extends State<AdminOrderCard> {
   }
 }
 
-class UserEmailWidget extends StatelessWidget {
+class UserInfoWidget extends StatelessWidget {
   final String userId;
 
-  const UserEmailWidget({super.key, required this.userId});
+  const UserInfoWidget({super.key, required this.userId});
+
+  // Function to launch Google Maps
+  Future<void> _launchMaps(double lat, double lon, BuildContext context) async {
+    final uri = Uri.parse('https://www.google.com/maps/search/?api=1&query=$lat,$lon');
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } else {
+       ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Could not open Google Maps.')),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -161,14 +236,49 @@ class UserEmailWidget extends StatelessWidget {
       future: FirebaseFirestore.instance.collection(usersCollectionPath).doc(userId).get(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Text('Loading user...');
+          return const Text('Loading user info...');
         }
         if (snapshot.hasError || !snapshot.hasData || !snapshot.data!.exists) {
-          return const Text('Unknown User', style: TextStyle(color: Colors.red, fontStyle: FontStyle.italic));
+          return const Text('Unknown User',
+              style: TextStyle(color: Colors.red, fontStyle: FontStyle.italic));
         }
         final userData = snapshot.data!.data() as Map<String, dynamic>;
-        return Text(
-          '${userData['email'] ?? 'No email available'}',
+        final username = userData['username'] ?? 'N/A';
+        final shopName = userData['shopName'] ?? 'N/A';
+        final address = userData['address'] ?? 'No address provided';
+        final GeoPoint? geoPoint = userData['location'];
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('User: $username', style: const TextStyle(fontWeight: FontWeight.bold)),
+            const SizedBox(height: 2),
+            Text('Shop: $shopName', style: const TextStyle(fontStyle: FontStyle.italic)),
+            const SizedBox(height: 4),
+            if (geoPoint != null)
+              InkWell(
+                onTap: () => _launchMaps(geoPoint.latitude, geoPoint.longitude, context),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.location_on, color: Colors.blue.shade700, size: 16),
+                    const SizedBox(width: 4),
+                    Expanded(
+                      child: Text(
+                        address, // Display the readable address
+                        style: TextStyle(
+                          color: Colors.blue.shade700,
+                          decoration: TextDecoration.underline,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            else
+              Text('Location: $address', style: TextStyle(color: Colors.grey[600])),
+          ],
         );
       },
     );

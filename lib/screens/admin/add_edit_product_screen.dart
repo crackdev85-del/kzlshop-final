@@ -307,7 +307,7 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
                       ),                    ),
                     const SizedBox(height: 24),
                     DropdownButtonFormField<String>(
-                      value: _selectedCategoryId,
+                      initialValue: _selectedCategoryId,
                       hint: const Text('Select Category'),
                       isExpanded: true,
                       items: _categories.map((Category category) {

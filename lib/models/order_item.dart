@@ -6,7 +6,7 @@ class OrderItem {
   final List<OrderProduct> products;
   final DateTime dateTime;
   String status;
-  final int orderNumber; 
+  final int orderNumber;
 
   OrderItem({
     required this.id,
@@ -50,12 +50,14 @@ class OrderProduct {
   final String name;
   final int quantity;
   final double price;
+  final String image; // <<< ADDED THIS LINE
 
   OrderProduct({
     required this.id,
     required this.name,
     required this.quantity,
     required this.price,
+    required this.image, // <<< ADDED THIS LINE
   });
 
   factory OrderProduct.fromMap(Map<String, dynamic> data) {
@@ -64,6 +66,7 @@ class OrderProduct {
       name: data['name'] ?? '',
       quantity: data['quantity'] ?? 0,
       price: (data['price'] as num?)?.toDouble() ?? 0.0,
+      image: data['image'] ?? '', // <<< ADDED THIS LINE
     );
   }
 }

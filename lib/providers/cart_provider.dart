@@ -1,7 +1,7 @@
-
 import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:moegyi/constants.dart';
 import 'package:moegyi/models/cart_item.dart';
 
 class CartProvider with ChangeNotifier {
@@ -44,6 +44,7 @@ class CartProvider with ChangeNotifier {
           name: productData['name'],
           price: (productData['price'] as num).toDouble(),
           quantity: quantity,
+          image: productData['imageUrl'] ?? '', // Fixed: Added image
           product: product,
         ),
       );
@@ -78,11 +79,18 @@ class CartProvider with ChangeNotifier {
     if (user == null) {
       throw Exception("User not logged in");
     }
-    final orderRef = _firestore.collection('orders');
-    final lastOrderQuery = await orderRef.orderBy('orderNumber', descending: true).limit(1).get();
+    // Fixed: Using the correct collection path from constants.dart
+    final orderRef = _firestore.collection(ordersCollectionPath); 
+    
+    // Note: This order number logic might not be safe in a multi-user environment.
+    // A more robust solution like a Cloud Function with a transaction is recommended for production.
+    final lastOrderQuery = await orderRef.orderBy('orderDate', descending: true).limit(1).get();
     int newOrderNumber = 1;
     if (lastOrderQuery.docs.isNotEmpty) {
-      newOrderNumber = (lastOrderQuery.docs.first.data()['orderNumber'] as int) + 1;
+      final lastOrderData = lastOrderQuery.docs.first.data();
+      if (lastOrderData.containsKey('orderNumber')) {
+        newOrderNumber = (lastOrderData['orderNumber'] as int) + 1;
+      } 
     }
 
     final newOrder = {
@@ -93,10 +101,11 @@ class CartProvider with ChangeNotifier {
         'name': cartItem.name,
         'quantity': cartItem.quantity,
         'price': cartItem.price,
+        'image': cartItem.image, // Fixed: Added image to order data
       }).toList(),
       'totalAmount': totalAmount,
       'orderDate': Timestamp.now(),
-      'status': 'Pending',
+      'status': 'Processing', // Changed from 'Pending' to match your order detail screen
       'shippingAddress': shippingAddress,
       'phoneNumber': phoneNumber,
     };

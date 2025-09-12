@@ -3,6 +3,7 @@ import 'package:moegyi/models/cart_item.dart';
 
 class Order {
   final String id;
+  final String userId; // <<< ADDED THIS LINE
   final int orderNumber;
   final List<CartItem> items;
   final double totalAmount;
@@ -13,6 +14,7 @@ class Order {
 
   Order({
     required this.id,
+    required this.userId, // <<< ADDED THIS LINE
     required this.orderNumber,
     required this.items,
     required this.totalAmount,
@@ -25,6 +27,7 @@ class Order {
   // Convert an Order object into a map for Firestore
   Map<String, dynamic> toMap() {
     return {
+      'userId': userId, // <<< ADDED THIS LINE
       'orderNumber': orderNumber,
       'items': items.map((item) => item.toMap()).toList(),
       'totalAmount': totalAmount,
@@ -51,6 +54,7 @@ class Order {
 
     return Order(
       id: doc.id,
+      userId: data['userId'] ?? '', // <<< ADDED THIS LINE
       orderNumber: data['orderNumber'] ?? 0,
       items: items,
       totalAmount: (data['totalAmount'] as num).toDouble(),
