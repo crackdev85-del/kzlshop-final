@@ -51,7 +51,7 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
     });
     try {
       final snapshot = await FirebaseFirestore.instance
-          .collection(categoriesCollectionPath)
+          .collection('categories') // Corrected the collection path
           .orderBy('name')
           .get();
       if (mounted) {
@@ -304,11 +304,10 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
                                 ),
                               )
                             : null,
-                      ),
-                    ),
+                      ),                    ),
                     const SizedBox(height: 24),
                     DropdownButtonFormField<String>(
-                      initialValue: _selectedCategoryId,
+                      value: _selectedCategoryId,
                       hint: const Text('Select Category'),
                       isExpanded: true,
                       items: _categories.map((Category category) {

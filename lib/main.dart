@@ -11,9 +11,7 @@ import 'package:moegyi/providers/order_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(
     MultiProvider(
       providers: [
@@ -33,7 +31,9 @@ class ThemeProvider with ChangeNotifier {
   ThemeMode get themeMode => _themeMode;
 
   void toggleTheme() {
-    _themeMode = _themeMode == ThemeMode.light ? ThemeMode.dark : ThemeMode.light;
+    _themeMode = _themeMode == ThemeMode.light
+        ? ThemeMode.dark
+        : ThemeMode.light;
     notifyListeners();
   }
 
@@ -54,61 +54,81 @@ class MyApp extends StatelessWidget {
     const Color pink = Colors.pink;
 
     final TextTheme appTextTheme = TextTheme(
-      displayLarge: GoogleFonts.oswald(fontSize: 57, fontWeight: FontWeight.bold),
+      displayLarge: GoogleFonts.oswald(
+        fontSize: 57,
+        fontWeight: FontWeight.bold,
+      ),
       titleLarge: GoogleFonts.roboto(fontSize: 22, fontWeight: FontWeight.w500),
       bodyMedium: GoogleFonts.openSans(fontSize: 14),
     );
 
-    // --- Light Theme --- 
+    // --- Light Theme ---
     final ThemeData lightTheme = ThemeData(
       useMaterial3: true,
-      scaffoldBackgroundColor: babyPink, 
+      scaffoldBackgroundColor: const Color.fromARGB(255, 255, 255, 255),
       colorScheme: ColorScheme.fromSeed(
-        seedColor: skyBlue, 
+        seedColor: skyBlue,
         brightness: Brightness.light,
         primary: skyBlue,
-        secondary: pink, 
+        secondary: const Color.fromARGB(255, 235, 82, 214),
       ),
       textTheme: appTextTheme,
       appBarTheme: AppBarTheme(
-        backgroundColor: skyBlue, 
-        foregroundColor: Colors.black, 
-        titleTextStyle: GoogleFonts.oswald(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black),
-      ),
-      elevatedButtonTheme: ElevatedButtonThemeData(
-        style: ElevatedButton.styleFrom(
-          foregroundColor: Colors.white, 
-          backgroundColor: pink, 
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-          textStyle: GoogleFonts.roboto(fontSize: 16, fontWeight: FontWeight.w500),
+        backgroundColor: skyBlue,
+        foregroundColor: Colors.black,
+        titleTextStyle: GoogleFonts.oswald(
+          fontSize: 24,
+          fontWeight: FontWeight.bold,
+          color: Colors.black,
         ),
-      ),
-    );
-
-    // --- Dark Theme --- 
-    final ThemeData darkTheme = ThemeData(
-      useMaterial3: true,
-      scaffoldBackgroundColor: Colors.grey[900], 
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: skyBlue,
-        brightness: Brightness.dark,
-        primary: skyBlue, 
-        secondary: pink,
-      ),
-      textTheme: appTextTheme.apply(bodyColor: Colors.white, displayColor: Colors.white),
-      appBarTheme: AppBarTheme(
-        backgroundColor: Colors.grey[850], 
-        foregroundColor: Colors.white,
-        titleTextStyle: GoogleFonts.oswald(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           foregroundColor: Colors.white,
-          backgroundColor: pink, 
+          backgroundColor: pink,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-          textStyle: GoogleFonts.roboto(fontSize: 16, fontWeight: FontWeight.w500),
+          textStyle: GoogleFonts.roboto(
+            fontSize: 16,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ),
+    );
+
+    // --- Dark Theme ---
+    final ThemeData darkTheme = ThemeData(
+      useMaterial3: true,
+      scaffoldBackgroundColor: Colors.grey[900],
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: skyBlue,
+        brightness: Brightness.dark,
+        primary: skyBlue,
+        secondary: pink,
+      ),
+      textTheme: appTextTheme.apply(
+        bodyColor: Colors.white,
+        displayColor: Colors.white,
+      ),
+      appBarTheme: AppBarTheme(
+        backgroundColor: Colors.grey[850],
+        foregroundColor: Colors.white,
+        titleTextStyle: GoogleFonts.oswald(
+          fontSize: 24,
+          fontWeight: FontWeight.bold,
+          color: Colors.white,
+        ),
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          foregroundColor: Colors.white,
+          backgroundColor: pink,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          textStyle: GoogleFonts.roboto(
+            fontSize: 16,
+            fontWeight: FontWeight.w500,
+          ),
         ),
       ),
     );

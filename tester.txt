@@ -1,1 +1,1 @@
-firebase appdistribution:distribute build/app/outputs/flutter-apk/app-release.apk --app 1:405459867937:android:49a3662825f88bd1420660 --testers "chawkuu@gmail.com" "snowsawgirl25@gmail.com"
+firebase appdistribution:distribute build/app/outputs/flutter-apk/app-release.apk --app 1:405459867937:android:49a3662825f88bd1420660 --testers "chawkuu@gmail.com","snowsawgirl25@gmail.com"

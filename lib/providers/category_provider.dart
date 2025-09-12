@@ -1,26 +1,50 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/category.dart';
-import '../constants.dart';
 
 class CategoryProvider with ChangeNotifier {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final String _collectionPath = 'categories'; // Collection path is defined directly here
 
   Stream<List<Category>> getCategories() {
-    return _firestore.collection(categoriesCollectionPath).snapshots().map((snapshot) {
+    return _firestore.collection(_collectionPath).snapshots().map((snapshot) {
       return snapshot.docs.map((doc) => Category.fromFirestore(doc)).toList();
     });
   }
 
-  Future<void> addCategory(String name, String imageUrl) async {
+  Future<void> addCategory(String name, String image) async {
     try {
-      await _firestore.collection(categoriesCollectionPath).add({
+      await _firestore.collection(_collectionPath).add({
         'name': name,
-        'imageUrl': imageUrl,
+        'image': image,
       });
       notifyListeners();
     } catch (e) {
       print(e.toString());
+      rethrow; // Rethrow the error to be caught by the UI
+    }
+  }
+
+  Future<void> updateCategory(String id, String name, String image) async {
+    try {
+      await _firestore.collection(_collectionPath).doc(id).update({
+        'name': name,
+        'image': image,
+      });
+      notifyListeners();
+    } catch (e) {
+      print(e.toString());
+      rethrow; // Rethrow the error to be caught by the UI
+    }
+  }
+
+  Future<void> deleteCategory(String id) async {
+    try {
+      await _firestore.collection(_collectionPath).doc(id).delete();
+      notifyListeners();
+    } catch (e) {
+      print(e.toString());
+      rethrow; // Rethrow the error to be caught by the UI
     }
   }
 }

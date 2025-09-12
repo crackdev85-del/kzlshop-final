@@ -13,7 +13,7 @@ import 'package:moegyi/screens/login_screen.dart';
 void main() {
   testWidgets('App starts with LoginScreen', (WidgetTester tester) async {
     // Build our app and trigger a frame.
-    await tester.pumpWidget(const Moegyi());
+    await tester.pumpWidget(const MyApp());
 
     // Verify that the LoginScreen is present.
     expect(find.byType(LoginScreen), findsOneWidget);

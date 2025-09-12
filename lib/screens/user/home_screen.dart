@@ -1,12 +1,13 @@
-
+import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:moegyi/constants.dart';
+import 'package:moegyi/constants.dart'; // Re-import constants
 import 'package:moegyi/providers/cart_provider.dart';
 import 'package:moegyi/screens/login_screen.dart';
 import 'package:moegyi/screens/user/cart_screen.dart';
 import 'package:moegyi/screens/user/my_orders_screen.dart';
+import 'package:moegyi/widgets/announcement_slideshow.dart';
 import 'package:moegyi/widgets/product_grid.dart';
 import 'package:provider/provider.dart';
 
@@ -33,7 +34,7 @@ class _HomeScreenState extends State<HomeScreen> {
     if (user != null) {
       try {
         final doc = await FirebaseFirestore.instance
-            .collection(usersCollectionPath)
+            .collection(usersCollectionPath) // Use constant from constants.dart
             .doc(user.uid)
             .get();
         if (doc.exists && mounted) {
@@ -76,7 +77,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return SizedBox(
       height: 110,
       child: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance.collection(categoriesCollectionPath).snapshots(),
+        stream: FirebaseFirestore.instance.collection('categories').snapshots(), // Keep hardcoded path for categories
         builder: (context, snapshot) {
           if (snapshot.hasError) {
             return const Center(child: Text('Error loading categories'));
@@ -137,7 +138,7 @@ class _HomeScreenState extends State<HomeScreen> {
               final categoryDoc = categories[index - 1];
               final categoryData = categoryDoc.data() as Map<String, dynamic>;
               final String name = categoryData['name'] ?? 'No Name';
-              final String imageUrl = categoryData['imageUrl'] ?? '';
+              final String imageUrl = categoryData['image'] ?? '';
               final bool isSelected = _selectedCategoryId == categoryDoc.id;
 
               Widget imageWidget;
@@ -146,13 +147,17 @@ class _HomeScreenState extends State<HomeScreen> {
               if (imageUrl.startsWith('data:image')) {
                 try {
                   final UriData? data = Uri.parse(imageUrl).data;
-                  final imageBytes = data!.contentAsBytes();
-                  imageWidget = Image.memory(
-                    imageBytes,
-                    fit: BoxFit.cover,
-                    width: imageSize,
-                    height: imageSize,
-                  );
+                  if (data != null) {
+                     final imageBytes = data.contentAsBytes();
+                     imageWidget = Image.memory(
+                        imageBytes,
+                        fit: BoxFit.cover,
+                        width: imageSize,
+                        height: imageSize,
+                     );
+                  } else {
+                     imageWidget = const Icon(Icons.broken_image, size: imageSize, color: Colors.grey);
+                  }
                 } catch (e) {
                   imageWidget = const Icon(Icons.broken_image, size: imageSize, color: Colors.grey);
                 }
@@ -210,94 +215,104 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
     if (_userRole == null) {
-      return const Center(child: CircularProgressIndicator());
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          'KZL Shop',
-          style: theme.textTheme.titleLarge?.copyWith(
-            color: theme.colorScheme.onPrimary,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        actions: [
-          IconButton(
-            tooltip: 'My Orders',
-            icon: const Icon(Icons.receipt_long),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const MyOrdersScreen()),
-              );
-            },
-          ),
-          Consumer<CartProvider>(
-            builder: (context, cart, child) => Badge(
-              label: Text(cart.itemCount.toString()),
-              isLabelVisible: cart.itemCount > 0,
-              child: IconButton(
-                tooltip: 'My Cart',
-                icon: const Icon(Icons.shopping_cart_outlined),
-                onPressed: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => const CartScreen()));
-                },
+      body: NestedScrollView(
+        headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
+          return <Widget>[
+            SliverAppBar(
+              title: Text(
+                'KZL Shop',
+                style: theme.textTheme.titleLarge?.copyWith(
+                  color: theme.colorScheme.onPrimary,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
+              actions: [
+                IconButton(
+                  tooltip: 'My Orders',
+                  icon: const Icon(Icons.receipt_long),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const MyOrdersScreen()),
+                    );
+                  },
+                ),
+                Consumer<CartProvider>(
+                  builder: (context, cart, child) => Badge(
+                    label: Text(cart.itemCount.toString()),
+                    isLabelVisible: cart.itemCount > 0,
+                    child: IconButton(
+                      tooltip: 'My Cart',
+                      icon: const Icon(Icons.shopping_cart_outlined),
+                      onPressed: () {
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => const CartScreen()));
+                      },
+                    ),
+                  ),
+                ),
+                IconButton(
+                  tooltip: 'Logout',
+                  icon: const Icon(Icons.logout),
+                  onPressed: _logout,
+                ),
+              ],
+              floating: true, 
+              snap: true, 
+              pinned: true, 
             ),
-          ),
-          IconButton(
-            tooltip: 'Logout',
-            icon: const Icon(Icons.logout),
-            onPressed: _logout,
-          ),
-        ],
-      ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(left: 16.0, top: 16.0),
-            child: Text(
-              "Categories",
-              style: theme.textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-                shadows: [
-                  Shadow(
-                    blurRadius: 10.0,
-                    color: Colors.black.withOpacity(0.3),
-                    offset: const Offset(5.0, 5.0),
+            SliverToBoxAdapter(
+              child: Column(
+                 crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const AnnouncementSlideshow(),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 16.0, top: 16.0, bottom: 8.0),
+                    child: Text(
+                      "Categories",
+                      style: theme.textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                         shadows: [
+                          Shadow(
+                            blurRadius: 10.0,
+                            color: Colors.black.withOpacity(0.3),
+                            offset: const Offset(5.0, 5.0),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  _buildCategoryCarousel(),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
+                    child: Text(
+                      "Products",
+                      style: theme.textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                         shadows: [
+                          Shadow(
+                            blurRadius: 10.0,
+                            color: Colors.black.withOpacity(0.3),
+                            offset: const Offset(5.0, 5.0),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ],
-              ),
+              )
             ),
-          ),
-          _buildCategoryCarousel(),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-            child: Text(
-              "Products",
-              style: theme.textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-                shadows: [
-                  Shadow(
-                    blurRadius: 10.0,
-                    color: Colors.black.withOpacity(0.3),
-                    offset: const Offset(5.0, 5.0),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          Expanded(child: ProductGrid(categoryId: _selectedCategoryId)),
-        ],
+          ];
+        },
+        body: ProductGrid(categoryId: _selectedCategoryId),
       ),
     );
   }
