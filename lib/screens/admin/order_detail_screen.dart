@@ -215,7 +215,7 @@ class UserInfoCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return FutureBuilder<DocumentSnapshot>(
       future: FirebaseFirestore.instance
-          .collection(usersCollectionPath)
+          .collection('artifacts/default-app-id/public/data/users')
           .doc(userId)
           .get(),
       builder: (context, snapshot) {
