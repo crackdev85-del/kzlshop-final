@@ -5,9 +5,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:myapp/constants.dart';
-import 'package:myapp/main.dart';
-import 'package:myapp/screens/admin/admin_home_screen.dart';
+import 'package:moegyi/constants.dart';
+import 'package:moegyi/main.dart';
+import 'package:moegyi/screens/admin/admin_home_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'dart:developer' as developer;
@@ -36,7 +36,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
       developer.log('No user logged in', name: 'ProfileScreen');
       return Future.error('No user logged in');
     }
-    return FirebaseFirestore.instance.collection(usersCollectionPath).doc(user.uid).get();
+    return FirebaseFirestore.instance
+        .collection(usersCollectionPath)
+        .doc(user.uid)
+        .get();
   }
 
   void _retryLoadUserData() {
@@ -46,7 +49,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _pickImage() async {
-    final XFile? image = await _picker.pickImage(source: ImageSource.gallery, imageQuality: 50);
+    final XFile? image = await _picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 50,
+    );
     if (image == null) return;
 
     setState(() {
@@ -66,12 +72,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error uploading image: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error uploading image: $e')));
       }
     } finally {
-      if(mounted){
+      if (mounted) {
         setState(() {
           _isUploading = false;
         });
@@ -82,7 +88,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Future<void> _launchMaps(String? address) async {
     if (address == null || address.isEmpty) return;
     final query = Uri.encodeComponent(address);
-    final url = Uri.parse('https://www.google.com/maps/search/?api=1&query=$query');
+    final url = Uri.parse(
+      'https://www.google.com/maps/search/?api=1&query=$query',
+    );
     try {
       if (await canLaunchUrl(url)) {
         await launchUrl(url);
@@ -91,9 +99,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Could not open maps: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Could not open maps: $e')));
       }
     }
   }
@@ -114,39 +122,42 @@ class _ProfileScreenState extends State<ProfileScreen> {
       appBar: AppBar(
         title: const Text('Profile'),
         actions: [
-           IconButton(
+          IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: _retryLoadUserData,
-           )
+          ),
         ],
       ),
       body: FutureBuilder<DocumentSnapshot>(
         future: _userDataFuture,
         builder: (context, snapshot) {
           if (snapshot.hasError) {
-             return Center(
-                child: Column(
+            return Center(
+              child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                    const Icon(Icons.error_outline, color: Colors.red, size: 60),
-                    const Padding(
-                        padding: EdgeInsets.all(16.0),
-                        child: Text('Error loading profile. Please try again.', textAlign: TextAlign.center),
+                  const Icon(Icons.error_outline, color: Colors.red, size: 60),
+                  const Padding(
+                    padding: EdgeInsets.all(16.0),
+                    child: Text(
+                      'Error loading profile. Please try again.',
+                      textAlign: TextAlign.center,
                     ),
-                    ElevatedButton.icon(
-                        onPressed: _retryLoadUserData,
-                        icon: const Icon(Icons.refresh),
-                        label: const Text('Retry'),
-                    )
+                  ),
+                  ElevatedButton.icon(
+                    onPressed: _retryLoadUserData,
+                    icon: const Icon(Icons.refresh),
+                    label: const Text('Retry'),
+                  ),
                 ],
-                ),
+              ),
             );
           }
 
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
-          
+
           if (!snapshot.hasData || !snapshot.data!.exists) {
             return const Center(child: Text('User profile not found.'));
           }
@@ -166,20 +177,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
           final String? profilePicture = userData['profilePicture'];
           try {
             String? base64String;
-            if (photoURL != null && photoURL.isNotEmpty && photoURL.startsWith('data:image')) {
-                base64String = photoURL.split(',').last;
+            if (photoURL != null &&
+                photoURL.isNotEmpty &&
+                photoURL.startsWith('data:image')) {
+              base64String = photoURL.split(',').last;
             } else if (profilePicture != null && profilePicture.isNotEmpty) {
-                base64String = profilePicture; 
+              base64String = profilePicture;
             }
-            
+
             if (base64String != null) {
-                imageBytes = base64Decode(base64String);
+              imageBytes = base64Decode(base64String);
             }
           } catch (e, s) {
-            developer.log('Error decoding profile image', name: 'ProfileScreen', error: e, stackTrace: s);
+            developer.log(
+              'Error decoding profile image',
+              name: 'ProfileScreen',
+              error: e,
+              stackTrace: s,
+            );
             imageBytes = null;
           }
-
 
           return ListView(
             padding: const EdgeInsets.all(16.0),
@@ -187,28 +204,35 @@ class _ProfileScreenState extends State<ProfileScreen> {
               Center(
                 child: Column(
                   children: [
-                     Stack(
-                        alignment: Alignment.bottomRight,
-                        children: [
-                          CircleAvatar(
-                            radius: 60,
-                            backgroundImage: imageBytes != null ? MemoryImage(imageBytes) : null,
-                            child: imageBytes == null ? const Icon(Icons.person, size: 60) : null,
+                    Stack(
+                      alignment: Alignment.bottomRight,
+                      children: [
+                        CircleAvatar(
+                          radius: 60,
+                          backgroundImage: imageBytes != null
+                              ? MemoryImage(imageBytes)
+                              : null,
+                          child: imageBytes == null
+                              ? const Icon(Icons.person, size: 60)
+                              : null,
+                        ),
+                        if (_isUploading)
+                          const CircularProgressIndicator()
+                        else
+                          Material(
+                            color: theme.colorScheme.secondary,
+                            shape: const CircleBorder(),
+                            clipBehavior: Clip.antiAlias,
+                            child: IconButton(
+                              icon: const Icon(
+                                Icons.camera_alt,
+                                color: Colors.white,
+                              ),
+                              onPressed: _pickImage,
+                            ),
                           ),
-                          if (_isUploading)
-                            const CircularProgressIndicator()
-                          else
-                            Material(
-                                color: theme.colorScheme.secondary,
-                                shape: const CircleBorder(),
-                                clipBehavior: Clip.antiAlias,
-                                child: IconButton(
-                                    icon: const Icon(Icons.camera_alt, color: Colors.white),
-                                    onPressed: _pickImage,
-                                ),
-                            )
-                        ],
-                      ),
+                      ],
+                    ),
                     const SizedBox(height: 16),
                     Text(username, style: theme.textTheme.headlineSmall),
                   ],
@@ -252,33 +276,42 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               const SizedBox(height: 20),
               Card(
-                 child: SwitchListTile(
-                    title: const Text('Dark Mode'),
-                    secondary: Icon(themeProvider.themeMode == ThemeMode.dark ? Icons.dark_mode : Icons.light_mode),
-                    value: themeProvider.themeMode == ThemeMode.dark,
-                    onChanged: (value) {
-                        themeProvider.toggleTheme();
-                    },
+                child: SwitchListTile(
+                  title: const Text('Dark Mode'),
+                  secondary: Icon(
+                    themeProvider.themeMode == ThemeMode.dark
+                        ? Icons.dark_mode
+                        : Icons.light_mode,
+                  ),
+                  value: themeProvider.themeMode == ThemeMode.dark,
+                  onChanged: (value) {
+                    themeProvider.toggleTheme();
+                  },
                 ),
               ),
-               const SizedBox(height: 20),
+              const SizedBox(height: 20),
               if (userRole == 'admin')
                 ElevatedButton.icon(
-                    onPressed: () {
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => const AdminHomeScreen()),
-                        );
-                    },
-                    icon: const Icon(Icons.admin_panel_settings),
-                    label: const Text('Admin Panel'),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const AdminHomeScreen(),
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.admin_panel_settings),
+                  label: const Text('Admin Panel'),
                 ),
               const SizedBox(height: 20),
               FilledButton.icon(
                 onPressed: () => _signOutAndNavigate(context),
                 icon: const Icon(Icons.logout),
                 label: const Text('Logout'),
-                style: FilledButton.styleFrom(backgroundColor: theme.colorScheme.error, foregroundColor: theme.colorScheme.onError),
+                style: FilledButton.styleFrom(
+                  backgroundColor: theme.colorScheme.error,
+                  foregroundColor: theme.colorScheme.onError,
+                ),
               ),
             ],
           );

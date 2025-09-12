@@ -42,7 +42,7 @@ class _HomeScreenState extends State<HomeScreen> {
           });
         }
       } catch (e) {
-        debugPrint('Error getting user role: \$e');
+        debugPrint('Error getting user role: $e');
       }
     } else {
       _navigateToLogin();
@@ -65,7 +65,7 @@ class _HomeScreenState extends State<HomeScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to log out: \${e.toString()}')),
+          SnackBar(content: Text('Failed to log out: ${e.toString()}')),
         );
       }
     }
@@ -111,7 +111,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           height: 64,
                           decoration: BoxDecoration(
                             color: isSelected ? theme.colorScheme.primary.withOpacity(0.2) : theme.colorScheme.surface,
-                            shape: BoxShape.circle,
+                            borderRadius: BorderRadius.circular(8),
                             border: Border.all(
                               color: isSelected ? theme.colorScheme.primary : Colors.grey.shade300,
                               width: 1.5,
@@ -175,13 +175,16 @@ class _HomeScreenState extends State<HomeScreen> {
                         width: imageSize + 4,
                         height: imageSize + 4,
                         decoration: BoxDecoration(
-                          shape: BoxShape.circle,
+                          borderRadius: BorderRadius.circular(8),
                           border: Border.all(
                             color: isSelected ? theme.colorScheme.primary : Colors.transparent,
                             width: 2,
                           ),
                         ),
-                        child: ClipOval(child: imageWidget),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: imageWidget
+                        ),
                       ),
                       const SizedBox(height: 8),
                       SizedBox(
@@ -294,7 +297,8 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
           Expanded(child: ProductGrid(categoryId: _selectedCategoryId)),
-        ],      ),
+        ],
+      ),
     );
   }
 }

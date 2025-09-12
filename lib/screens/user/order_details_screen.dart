@@ -35,7 +35,7 @@ class OrderDetailsScreen extends StatelessWidget {
                     children: [
                       _buildDetailRow(context, 'Order Number', '#${order.orderNumber}'),
                       _buildDetailRow(context, 'Order Date', DateFormat.yMMMd().format(order.dateTime)),
-                      _buildDetailRow(context, 'Total Amount', '${order.totalAmount.toStringAsFixed(2)} Kyat'),
+                      _buildDetailRow(context, 'Total Amount', '${order.totalAmount.toInt()} Kyat'),
                       _buildDetailRow(context, 'Status', order.status),
                     ],
                   ),
@@ -59,7 +59,7 @@ class OrderDetailsScreen extends StatelessWidget {
                     child: ListTile(
                       title: Text(item.name),
                       subtitle: Text('Quantity: ${item.quantity}'),
-                      trailing: Text('${item.price.toStringAsFixed(2)} Kyat'),
+                      trailing: Text('${item.price.toInt()} Kyat'),
                     ),
                   );
                 },

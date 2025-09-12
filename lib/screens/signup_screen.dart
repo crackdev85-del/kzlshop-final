@@ -251,14 +251,14 @@ class _SignupScreenState extends State<SignupScreen> {
                   onPressed: _getLocation,
                   icon: const Icon(Icons.location_searching),
                   label: const Text('Get Location'),
-                  style: ElevatedButton.stylefrom(
+                  style: ElevatedButton.styleFrom(
                     minimumSize: const Size(double.infinity, 50),
                   ),
                 ),
               const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: _signup,
-                style: ElevatedButton.stylefrom(
+                style: ElevatedButton.styleFrom(
                   minimumSize: const Size(double.infinity, 50),
                 ),
                 child: const Text('Sign Up'),
