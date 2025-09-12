@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:myapp/models/cart_item.dart';
+import 'package:moegyi/models/cart_item.dart';
 
 class Order {
   final String id;

@@ -4,9 +4,9 @@ import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:myapp/constants.dart';
+import 'package:moegyi/constants.dart';
 import 'package:image/image.dart' as img;
-import 'package:myapp/models/category.dart';
+import 'package:moegyi/models/category.dart';
 
 class AddEditProductScreen extends StatefulWidget {
   final String? productId;
@@ -352,7 +352,7 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
                             decoration: const InputDecoration(
                                 labelText: 'Price',
                                 border: OutlineInputBorder(),
-                                prefixText: '\$ '),
+                                prefixText: 'Kyat '),
                             keyboardType:
                                 const TextInputType.numberWithOptions(decimal: true),
                             validator: (value) {

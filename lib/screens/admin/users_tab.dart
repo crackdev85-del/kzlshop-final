@@ -1,8 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:myapp/constants.dart';
-import 'package:myapp/screens/admin/edit_user_screen.dart';
-import 'package:myapp/screens/admin/user_detail_screen.dart';
+import 'package:moegyi/constants.dart';
+import 'package:moegyi/screens/admin/edit_user_screen.dart';
+import 'package:moegyi/screens/admin/user_detail_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class UsersTab extends StatelessWidget {

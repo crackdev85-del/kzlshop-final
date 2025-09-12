@@ -5,8 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:myapp/constants.dart';
-import 'package:myapp/screens/login_screen.dart';
+import 'package:moegyi/constants.dart';
+import 'package:moegyi/screens/login_screen.dart';
 import 'dart:developer' as developer;
 
 class ProfileTab extends StatefulWidget {

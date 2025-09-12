@@ -22,7 +22,7 @@ void main() async {
         ChangeNotifierProvider(create: (context) => OrderProvider()),
         ChangeNotifierProvider(create: (context) => CategoryProvider()),
       ],
-      child: const MyApp(),
+      child: const Moegyi(),
     ),
   );
 }
@@ -43,8 +43,8 @@ class ThemeProvider with ChangeNotifier {
   }
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class Moegyi extends StatelessWidget {
+  const Moegyi({super.key});
 
   @override
   Widget build(BuildContext context) {

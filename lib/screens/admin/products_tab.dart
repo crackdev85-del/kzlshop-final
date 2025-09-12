@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:myapp/constants.dart';
-import 'package:myapp/screens/admin/add_edit_product_screen.dart';
+import 'package:moegyi/constants.dart';
+import 'package:moegyi/screens/admin/add_edit_product_screen.dart';
 
 class ProductsTab extends StatelessWidget {
   const ProductsTab({super.key});
