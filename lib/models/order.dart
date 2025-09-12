@@ -1,44 +1,44 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:moegyi/models/cart_item.dart';
 
-class Order {
+class Order with ChangeNotifier {
   final String id;
-  final String userId; // <<< ADDED THIS LINE
-  final int orderNumber;
+  final double total;
   final List<CartItem> items;
-  final double totalAmount;
-  final DateTime orderDate;
-  final String status;
-  final String shippingAddress;
-  final String phoneNumber;
+  final DateTime date;
+  String status; // Allow status to be updated
 
   Order({
     required this.id,
-    required this.userId, // <<< ADDED THIS LINE
-    required this.orderNumber,
+    required this.total,
     required this.items,
-    required this.totalAmount,
-    required this.orderDate,
-    required this.status,
-    required this.shippingAddress,
-    required this.phoneNumber,
+    required this.date,
+    this.status = 'Order Placed',
   });
 
-  // Convert an Order object into a map for Firestore
+  void updateStatus(String newStatus) {
+    status = newStatus;
+    notifyListeners();
+  }
+
   Map<String, dynamic> toMap() {
     return {
-      'userId': userId, // <<< ADDED THIS LINE
-      'orderNumber': orderNumber,
-      'items': items.map((item) => item.toMap()).toList(),
-      'totalAmount': totalAmount,
-      'orderDate': Timestamp.fromDate(orderDate),
+      'totalAmount': total,
+      'dateTime': Timestamp.fromDate(date),
+      'products': items
+          .map((cp) => {
+                'id': cp.id,
+                'name': cp.name,
+                'quantity': cp.quantity,
+                'price': cp.price,
+                'image': cp.image,
+              })
+          .toList(),
       'status': status,
-      'shippingAddress': shippingAddress,
-      'phoneNumber': phoneNumber,
     };
   }
 
-  // Create an Order object from a DocumentSnapshot
   static Future<Order> fromSnapshot(DocumentSnapshot doc) async {
     final data = doc.data() as Map<String, dynamic>;
 
@@ -47,21 +47,39 @@ class Order {
           .collection('products')
           .doc(itemData['productId'])
           .get();
-      return CartItem.fromMap(itemData, productDoc);
+
+      if (productDoc.exists) {
+        final productData = productDoc.data() as Map<String, dynamic>;
+        final combinedData = {
+          'id': productDoc.id,
+          'name': productData['name'],
+          'price': productData['price'],
+          'image': productData['image'],
+          'quantity': itemData['quantity'],
+        };
+        return CartItem.fromMap(combinedData);
+      } else {
+        // Handle the case where the product doesn't exist anymore
+        // You might want to return a placeholder or skip this item
+        final placeholderData = {
+          'id': itemData['productId'],
+          'name': 'Product not found',
+          'price': 0.0,
+          'image': '',
+          'quantity': itemData['quantity'],
+        };
+        return CartItem.fromMap(placeholderData);
+      }
     }).toList();
 
     final items = await Future.wait(itemFutures);
 
     return Order(
       id: doc.id,
-      userId: data['userId'] ?? '', // <<< ADDED THIS LINE
-      orderNumber: data['orderNumber'] ?? 0,
+      total: (data['totalAmount'] as num).toDouble(),
+      date: (data['dateTime'] as Timestamp).toDate(),
       items: items,
-      totalAmount: (data['totalAmount'] as num).toDouble(),
-      orderDate: (data['orderDate'] as Timestamp).toDate(),
-      status: data['status'] ?? 'Pending',
-      shippingAddress: data['shippingAddress'] ?? '',
-      phoneNumber: data['phoneNumber'] ?? '',
+      status: data['status'] ?? 'Order Placed',
     );
   }
 }

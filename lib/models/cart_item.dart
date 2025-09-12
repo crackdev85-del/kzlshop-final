@@ -6,7 +6,6 @@ class CartItem {
   final double price;
   final int quantity;
   final String image;
-  final DocumentSnapshot product;
 
   CartItem({
     required this.id,
@@ -14,27 +13,27 @@ class CartItem {
     required this.price,
     required this.quantity,
     required this.image,
-    required this.product,
   });
 
   // Convert a CartItem object into a map for Firestore
   Map<String, dynamic> toMap() {
     return {
-      'productId': id,
+      'id': id,
+      'name': name,
+      'price': price,
       'quantity': quantity,
+      'image': image,
     };
   }
 
-  // Create a CartItem from a map and a product snapshot
-  factory CartItem.fromMap(Map<String, dynamic> map, DocumentSnapshot product) {
-    final productData = product.data() as Map<String, dynamic>;
+  // Create a CartItem from a map
+  factory CartItem.fromMap(Map<String, dynamic> map) {
     return CartItem(
-      id: product.id,
-      name: productData['name'] ?? '',
-      price: (productData['price'] as num?)?.toDouble() ?? 0.0,
-      image: productData['imageUrl'] ?? '',
+      id: map['id'] ?? '',
+      name: map['name'] ?? '',
+      price: (map['price'] as num?)?.toDouble() ?? 0.0,
       quantity: map['quantity'] ?? 1,
-      product: product,
+      image: map['image'] ?? '',
     );
   }
 
@@ -45,7 +44,6 @@ class CartItem {
     double? price,
     int? quantity,
     String? image,
-    DocumentSnapshot? product,
   }) {
     return CartItem(
       id: id ?? this.id,
@@ -53,7 +51,6 @@ class CartItem {
       price: price ?? this.price,
       quantity: quantity ?? this.quantity,
       image: image ?? this.image,
-      product: product ?? this.product,
     );
   }
 }

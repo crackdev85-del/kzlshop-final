@@ -6,7 +6,8 @@ class CartItemCard extends StatelessWidget {
   final Function()? onRemove;
   final Function(int)? onQuantityChanged;
 
-  const CartItemCard({super.key, 
+  const CartItemCard({
+    super.key,
     required this.cartItem,
     this.onRemove,
     this.onQuantityChanged,
@@ -15,69 +16,96 @@ class CartItemCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final productData = cartItem.product.data() as Map<String, dynamic>;
 
     return Card(
-      margin: const EdgeInsets.symmetric(vertical: 8.0),
-      elevation: 3,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      margin: const EdgeInsets.symmetric(horizontal: 15, vertical: 6),
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       child: Padding(
-        padding: const EdgeInsets.all(12.0),
+        padding: const EdgeInsets.all(10.0),
         child: Row(
           children: [
             // Product Image
             ClipRRect(
               borderRadius: BorderRadius.circular(8.0),
               child: Image.network(
-                productData['imageUrl'] ?? '',
-                width: 80,
-                height: 80,
+                cartItem.image,
+                width: 70,
+                height: 70,
                 fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) => 
-                  Container(width: 80, height: 80, color: Colors.grey[200], child: const Icon(Icons.image, color: Colors.grey)),
+                errorBuilder: (ctx, err, stack) => Container(
+                  width: 70,
+                  height: 70,
+                  color: Colors.grey[200],
+                  child: Icon(Icons.shopping_bag_outlined, color: Colors.grey[400], size: 35),
+                ),
               ),
             ),
-            const SizedBox(width: 16),
+            const SizedBox(width: 15),
+
             // Product Details
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    productData['name'] ?? 'No Name',
-                    style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                    cartItem.name,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                    maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '${productData['price']?.toStringAsFixed(2) ?? '0.00'} Kyat',
-                    style: theme.textTheme.bodyLarge?.copyWith(color: theme.colorScheme.primary, fontWeight: FontWeight.w600),
+                    '${cartItem.price.toStringAsFixed(2)} Kyat',
+                    style: TextStyle(
+                      color: theme.primaryColor,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                    ),
                   ),
                 ],
               ),
             ),
-            // Quantity and Remove Button
-            if (onQuantityChanged != null && onRemove != null) // Only show controls if callbacks are provided
-              Row(
-                children: [
+            const SizedBox(width: 10),
+
+            // Quantity and Remove
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                if (onQuantityChanged != null)
                   IconButton(
                     icon: const Icon(Icons.remove_circle_outline, size: 22),
-                    onPressed: () => onQuantityChanged!(cartItem.quantity - 1),
+                    onPressed: () {
+                      if (cartItem.quantity > 1) {
+                        onQuantityChanged!(cartItem.quantity - 1);
+                      } else {
+                        // If quantity is 1, a common behavior is to ask for removal.
+                        // Or simply do nothing. Here we call onRemove if available.
+                        if (onRemove != null) {
+                           onRemove!();
+                        }
+                      }
+                    },
                   ),
-                  Text('${cartItem.quantity}', style: theme.textTheme.titleMedium),
+                Text(
+                  cartItem.quantity.toString(),
+                  style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+                ),
+                if (onQuantityChanged != null)
                   IconButton(
-                    icon: const Icon(Icons.add_circle_outline, size: 22),
+                    icon: Icon(Icons.add_circle_outline, size: 22, color: theme.primaryColor),
                     onPressed: () => onQuantityChanged!(cartItem.quantity + 1),
                   ),
+                if (onRemove != null && onQuantityChanged == null)
                   IconButton(
-                    icon: const Icon(Icons.delete_outline, color: Colors.red, size: 24),
+                    icon: const Icon(Icons.delete_outline, color: Colors.red),
                     onPressed: onRemove,
-                    tooltip: 'Remove',
-                  ),
-                ],  
-              ) 
-            else // Display quantity for order details
-                Text('Qty: ${cartItem.quantity}', style: theme.textTheme.titleMedium),
+                  )
+              ],
+            ),
           ],
         ),
       ),
