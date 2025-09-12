@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:myapp/providers/cart_provider.dart';
-import 'package:myapp/providers/order_provider.dart';
-import 'package:myapp/screens/user/product_detail_screen.dart';
+import 'package:moegyi/providers/cart_provider.dart';
+import 'package:moegyi/providers/order_provider.dart';
+import 'package:moegyi/screens/user/product_detail_screen.dart';
 import 'package:provider/provider.dart';
-import 'package:myapp/models/cart_item.dart';
+import 'package:moegyi/models/cart_item.dart';
 
 class CartScreen extends StatelessWidget {
   const CartScreen({super.key});

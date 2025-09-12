@@ -1,9 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:myapp/constants.dart';
-import 'package:myapp/screens/signup_screen.dart';
-import 'package:myapp/widgets/auth_wrapper.dart';
+import 'package:moegyi/constants.dart';
+import 'package:moegyi/screens/signup_screen.dart';
+import 'package:moegyi/widgets/auth_wrapper.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});

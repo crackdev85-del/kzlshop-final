@@ -3,8 +3,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
-import 'package:myapp/screens/login_screen.dart';
-import 'package:myapp/constants.dart';
+import 'package:moegyi/screens/login_screen.dart';
+import 'package:moegyi/constants.dart';
 import 'dart:developer' as developer;
 
 
@@ -100,7 +100,7 @@ class _SignupScreenState extends State<SignupScreen> {
             readableAddress = '${place.street}, ${place.subLocality}, ${place.locality}';
           }
       } catch (e) {
-          developer.log('Could not get placemark', name: 'myapp.signup', error: e);
+          developer.log('Could not get placemark', name: 'moegyi.signup', error: e);
       }
 
       if (mounted) {
@@ -245,7 +245,7 @@ class _SignupScreenState extends State<SignupScreen> {
                       onPressed: _getLocation,
                       icon: const Icon(Icons.location_searching),
                       label: const Text('Get Location'),
-                       style: ElevatedButton.styleFrom(
+                       style: ElevatedButton.stylefrom(
                         minimumSize: const Size(double.infinity, 50),
                       ),
                   ),

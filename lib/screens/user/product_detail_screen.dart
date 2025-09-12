@@ -3,10 +3,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:myapp/constants.dart';
-import 'package:myapp/providers/cart_provider.dart';
-import 'package:myapp/screens/user/cart_screen.dart';
-import 'package:myapp/widgets/fade_page_route.dart';
+import 'package:moegyi/constants.dart';
+import 'package:moegyi/providers/cart_provider.dart';
+import 'package:moegyi/screens/user/cart_screen.dart';
+import 'package:moegyi/widgets/fade_page_route.dart';
 import 'package:provider/provider.dart';
 
 // A new widget to fetch and display the category name from a categoryId.

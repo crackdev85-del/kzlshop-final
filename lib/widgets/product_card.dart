@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:myapp/constants.dart';
-import 'package:myapp/providers/cart_provider.dart';
-import 'package:myapp/screens/user/product_detail_screen.dart';
+import 'package:moegyi/constants.dart';
+import 'package:moegyi/providers/cart_provider.dart';
+import 'package:moegyi/screens/user/product_detail_screen.dart';
 import 'package:provider/provider.dart';
 
 class ProductCard extends StatelessWidget {

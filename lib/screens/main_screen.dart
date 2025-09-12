@@ -2,11 +2,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import 'package:myapp/main.dart';
-import 'package:myapp/screens/tabs/home_tab.dart';
-import 'package:myapp/screens/tabs/profile_tab.dart';
-import 'package:myapp/screens/tabs/cart_tab.dart';
-import 'package:myapp/screens/tabs/wishlist_tab.dart';
+import 'package:moegyi/main.dart';
+import 'package:moegyi/screens/tabs/home_tab.dart';
+import 'package:moegyi/screens/tabs/profile_tab.dart';
+import 'package:moegyi/screens/tabs/cart_tab.dart';
+import 'package:moegyi/screens/tabs/wishlist_tab.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:myapp/models/order_item.dart';
-import 'package:myapp/screens/user/order_details_screen.dart';
+import 'package:moegyi/models/order_item.dart';
+import 'package:moegyi/screens/user/order_details_screen.dart';
 
 class OrderItemCard extends StatelessWidget {
   final OrderItem order;

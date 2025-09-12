@@ -2,12 +2,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:myapp/constants.dart';
-import 'package:myapp/providers/cart_provider.dart';
-import 'package:myapp/screens/login_screen.dart';
-import 'package:myapp/screens/user/cart_screen.dart';
-import 'package:myapp/screens/user/my_orders_screen.dart';
-import 'package:myapp/widgets/product_grid.dart';
+import 'package:moegyi/constants.dart';
+import 'package:moegyi/providers/cart_provider.dart';
+import 'package:moegyi/screens/login_screen.dart';
+import 'package:moegyi/screens/user/cart_screen.dart';
+import 'package:moegyi/screens/user/my_orders_screen.dart';
+import 'package:moegyi/widgets/product_grid.dart';
 import 'package:provider/provider.dart';
 
 class HomeScreen extends StatefulWidget {

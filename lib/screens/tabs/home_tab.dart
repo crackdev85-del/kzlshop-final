@@ -1,6 +1,6 @@
 
 import 'package:flutter/material.dart';
-import 'package:myapp/screens/user/home_screen.dart';
+import 'package:moegyi/screens/user/home_screen.dart';
 
 class HomeTab extends StatelessWidget {
   final PageController pageController;

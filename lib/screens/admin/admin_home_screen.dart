@@ -1,13 +1,13 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:myapp/screens/admin/announcements_tab.dart';
-import 'package:myapp/screens/admin/categories_tab.dart';
-import 'package:myapp/screens/admin/orders_tab.dart';
-import 'package:myapp/screens/admin/products_tab.dart';
-import 'package:myapp/screens/admin/reports_tab.dart';
-import 'package:myapp/screens/admin/settings_tab.dart';
-import 'package:myapp/screens/admin/townships_tab.dart';
-import 'package:myapp/screens/admin/users_tab.dart';
+import 'package:moegyi/screens/admin/announcements_tab.dart';
+import 'package:moegyi/screens/admin/categories_tab.dart';
+import 'package:moegyi/screens/admin/orders_tab.dart';
+import 'package:moegyi/screens/admin/products_tab.dart';
+import 'package:moegyi/screens/admin/reports_tab.dart';
+import 'package:moegyi/screens/admin/settings_tab.dart';
+import 'package:moegyi/screens/admin/townships_tab.dart';
+import 'package:moegyi/screens/admin/users_tab.dart';
 
 class AdminHomeScreen extends StatefulWidget {
   const AdminHomeScreen({super.key});

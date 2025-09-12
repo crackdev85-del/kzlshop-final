@@ -1,8 +1,8 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:myapp/constants.dart';
-import 'package:myapp/widgets/product_card.dart';
+import 'package:moegyi/constants.dart';
+import 'package:moegyi/widgets/product_card.dart';
 
 class ProductGrid extends StatefulWidget {
   final String? categoryId;

@@ -1,8 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:myapp/constants.dart';
-import 'package:myapp/models/order_item.dart';
+import 'package:moegyi/constants.dart';
+import 'package:moegyi/models/order_item.dart';
 
 class OrderProvider with ChangeNotifier {
   List<OrderItem> _orders = [];
