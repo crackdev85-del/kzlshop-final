@@ -13,7 +13,7 @@ class ProductCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cart = Provider.of<CartProvider>(context, listen: false);
+    Provider.of<CartProvider>(context, listen: false);
     final theme = Theme.of(context);
 
     final productData = product.data() as Map<String, dynamic>;

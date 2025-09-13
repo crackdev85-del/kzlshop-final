@@ -109,8 +109,6 @@ class _CheckoutCardState extends State<CheckoutCard> {
               'image': cartItem.image,
             }).toList(),
         widget.cart.totalAmount,
-        '', // address
-        '', // phone
       );
       widget.cart.clear();
       if (!context.mounted) return;
@@ -124,8 +122,8 @@ class _CheckoutCardState extends State<CheckoutCard> {
     } catch (error) {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Ordering failed! Please try again later.'),
+        SnackBar(
+          content: Text('Ordering failed! ${error.toString()}'),
         ),
       );
     } finally {

@@ -38,17 +38,28 @@ class OrderProvider with ChangeNotifier {
     }
   }
 
-  Future<void> addOrder(List<Map<String, dynamic>> cartProducts, double total, String shippingAddress, String phoneNumber) async {
+  Future<void> addOrder(List<Map<String, dynamic>> cartProducts, double total) async {
     final user = _auth.currentUser;
-    if (user == null) return;
+    if (user == null) {
+      throw Exception('No user logged in.');
+    }
 
     final timestamp = DateTime.now();
     try {
+      // Fetch user details from 'users' collection
+      final userDoc = await _firestore.collection(usersCollectionPath).doc(user.uid).get();
+      final userData = userDoc.data();
+      final String shippingAddress = userData?['address'] ?? 'N/A';
+      final String phoneNumber = userData?['phoneNumber'] ?? 'N/A';
+
       final orderRef = _firestore.collection(ordersCollectionPath);
       final lastOrderQuery = await orderRef.orderBy('orderNumber', descending: true).limit(1).get();
       int newOrderNumber = 1;
       if (lastOrderQuery.docs.isNotEmpty) {
-        newOrderNumber = (lastOrderQuery.docs.first.data()['orderNumber'] as int) + 1;
+        final lastOrderData = lastOrderQuery.docs.first.data();
+        if (lastOrderData.containsKey('orderNumber') && lastOrderData['orderNumber'] is int) {
+          newOrderNumber = (lastOrderData['orderNumber'] as int) + 1;
+        }
       }
 
       final newOrderRef = await orderRef.add({
@@ -93,18 +104,14 @@ class OrderProvider with ChangeNotifier {
     }
   }
 
-  // New function to update order status
   Future<void> updateOrderStatus(String orderId, String newStatus) async {
     try {
       await _firestore
           .collection(ordersCollectionPath)
           .doc(orderId)
           .update({'status': newStatus});
-      // No need to call notifyListeners() here because the Admin screen is using a StreamBuilder
-      // which will automatically reflect the changes from Firestore.
     } catch (error) {
       debugPrint('Error updating order status: $error');
-      // Optionally, re-throw the error to show a message in the UI
       rethrow;
     }
   }

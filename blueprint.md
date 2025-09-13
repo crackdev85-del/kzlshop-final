@@ -6,7 +6,18 @@ This document outlines the project's style, design, and features, from its initi
 
 ## 2. Style, Design, and Features
 
-### 2.1. Version 1.4 (Current)
+### 2.1. Version 1.5 (Current)
+
+1.  **Admin - Revamped Order Management:**
+    *   **Refined UI Flow:** The order management process for admins has been streamlined. The `OrdersTab` now serves as a clean, high-level list of all incoming orders.
+    *   **Real-time Detail View:** The `AdminOrdersScreen` has been refactored to be the primary detail screen. It now uses the `orderId` and a `StreamBuilder` to listen for real-time updates from Firestore, ensuring the displayed data is always current.
+    *   **Comprehensive Customer Info:** The customer information card on the `AdminOrdersScreen` now displays the user's `username`, `shopName`, `phoneNumber`, and a tappable link that opens the customer's location directly in Google Maps.
+    *   **Product Editing Capability:** A new `EditOrderProductsScreen` has been introduced, allowing admins to modify an existing order.
+        *   Admins can adjust the `quantity` of each product or remove a product from the order entirely.
+        *   When changes are saved, the `totalAmount` is automatically recalculated, and the order document in Firestore is updated.
+        *   This screen is accessible via a new "Edit" button on the `AdminOrdersScreen`.
+
+### 2.2. Version 1.4
 
 1.  **Theme:**
     *   A modern, responsive theme with both light and dark modes.
@@ -34,11 +45,16 @@ This document outlines the project's style, design, and features, from its initi
 
 ## 3. Completed Plan
 
-1.  **Implement Category Carousel and Filtering on Home Screen:**
+1.  **Implement Admin Order Editing:**
+    *   Refactored the admin order view to use `StreamBuilder` for real-time data on `AdminOrdersScreen`.
+    *   Added a new `EditOrderProductsScreen` allowing admins to change quantities or remove items from an order.
+    *   Implemented the logic to automatically recalculate the total price and update the order in Firestore.
+    *   Enhanced the customer info section to include `username` and a Google Maps link for the `location`.
+2.  **Implement Category Carousel and Filtering on Home Screen:**
     *   Added a horizontal, scrollable list of categories with their images and names below the app bar on the `HomeScreen`.
     *   Implemented functionality to filter the product grid based on the selected category.
     *   Included an "All" category option to view all products.
-2.  **Display Category on Product Detail Page:**
+3.  **Display Category on Product Detail Page:**
     *   Created a reusable `CategoryWidget` to fetch a category's name by its ID.
     *   Integrated this widget into the `ProductDetailScreen` to display the category name prominently.
     *   Corrected an issue where network images were not loading on the detail page.
