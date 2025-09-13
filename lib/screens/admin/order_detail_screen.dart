@@ -7,24 +7,104 @@ import 'package:moegyi/models/cart_item.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../constants.dart';
 
-class OrderDetailScreen extends StatelessWidget {
+class OrderDetailScreen extends StatefulWidget {
   final DocumentSnapshot orderSnapshot;
 
   const OrderDetailScreen({super.key, required this.orderSnapshot});
 
   @override
-  Widget build(BuildContext context) {
-    final orderData = orderSnapshot.data() as Map<String, dynamic>;
-    final orderId = orderSnapshot.id;
-    final List<dynamic> productItems = orderData['products'] ?? [];
-    final List<CartItem> orderItems =
-        productItems.map((item) => CartItem.fromMap(item)).toList();
+  _OrderDetailScreenState createState() => _OrderDetailScreenState();
+}
 
+class _OrderDetailScreenState extends State<OrderDetailScreen> {
+  late Map<String, dynamic> orderData;
+  late String orderId;
+  late List<CartItem> orderItems;
+  late double totalAmount;
+
+  @override
+  void initState() {
+    super.initState();
+    orderData = widget.orderSnapshot.data() as Map<String, dynamic>;
+    orderId = widget.orderSnapshot.id;
+    final List<dynamic> productItems = orderData['products'] ?? [];
+    orderItems =
+        productItems.map((item) => CartItem.fromMap(item)).toList();
+    totalAmount = orderData['totalAmount'];
+  }
+
+  void _showEditQuantityDialog(BuildContext context, CartItem item, int index) {
+    final TextEditingController _quantityController = TextEditingController(text: item.quantity.toString());
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Edit Quantity'),
+        content: TextField(
+          controller: _quantityController,
+          keyboardType: TextInputType.number,
+          decoration: InputDecoration(labelText: 'Quantity'),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              final newQuantity = int.tryParse(_quantityController.text);
+              if (newQuantity != null && newQuantity > 0) {
+                _updateOrderQuantity(index, newQuantity);
+                Navigator.of(context).pop();
+              }
+            },
+            child: Text('Save'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _updateOrderQuantity(int itemIndex, int newQuantity) async {
+    final updatedItems = List<CartItem>.from(orderItems);
+    final itemToUpdate = updatedItems[itemIndex];
+    final newPrice = itemToUpdate.price;
+    final oldQuantity = itemToUpdate.quantity;
+    updatedItems[itemIndex] = itemToUpdate.copyWith(quantity: newQuantity);
+
+    final newTotalAmount =
+        totalAmount - (itemToUpdate.price * oldQuantity) + (newPrice * newQuantity);
+
+    final productsAsMaps = updatedItems.map((item) => item.toMap()).toList();
+
+    try {
+      await FirebaseFirestore.instance
+          .collection('orders')
+          .doc(orderId)
+          .update({'products': productsAsMaps, 'totalAmount': newTotalAmount});
+
+      setState(() {
+        orderItems = updatedItems;
+        totalAmount = newTotalAmount;
+        orderData['totalAmount'] = newTotalAmount; // Update local data as well
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Order updated successfully')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to update order: $e')),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Order #${orderId.substring(0, 8)}'),
+        title: Text('Order #${orderData['orderNumber'] ?? orderId.substring(0, 8)}'),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -34,6 +114,7 @@ class OrderDetailScreen extends StatelessWidget {
             UserInfoCard(
               userId: orderData['userId'],
               orderId: orderId,
+              orderData: orderData,
             ),
             const SizedBox(height: 24),
             Text(
@@ -54,9 +135,18 @@ class OrderDetailScreen extends StatelessWidget {
                     title: Text(item.name,
                         style: const TextStyle(fontWeight: FontWeight.bold)),
                     subtitle: Text('Quantity: ${item.quantity}'),
-                    trailing: Text(
-                      '${item.price.toStringAsFixed(2)} Kyat',
-                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          '${item.price.toStringAsFixed(0)} Kyat',
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        IconButton(
+                          icon: Icon(Icons.edit, color: Colors.blue),
+                          onPressed: () => _showEditQuantityDialog(context, item, index),
+                        ),
+                      ],
                     ),
                   ),
                 );
@@ -89,7 +179,7 @@ class OrderDetailScreen extends StatelessWidget {
                     const Divider(height: 20),
                     _buildSummaryRow(
                       'Total Amount',
-                      '${orderData['totalAmount'].toStringAsFixed(2)} Kyat',
+                      '${totalAmount.toStringAsFixed(0)} Kyat',
                       isTotal: true,
                     ),
                   ],
@@ -188,25 +278,27 @@ class OrderItemImage extends StatelessWidget {
 class UserInfoCard extends StatelessWidget {
   final String userId;
   final String orderId;
+  final Map<String, dynamic> orderData;
 
   const UserInfoCard({
     super.key,
     required this.userId,
     required this.orderId,
+    required this.orderData,
   });
 
-  Future<void> _launchMaps(BuildContext context, String location) async {
-    if (location.isEmpty) {
+  Future<void> _launchMaps(BuildContext context, GeoPoint? location) async {
+    if (location == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('No location provided.')),
       );
       return;
     }
     final Uri url =
-        Uri.parse('https://www.google.com/maps?q=${Uri.encodeComponent(location)}');
+        Uri.parse('https://www.google.com/maps/search/?api=1&query=${location.latitude},${location.longitude}');
     if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Could not open map for $location')),
+        const SnackBar(content: Text('Could not open map')),
       );
     }
   }
@@ -215,7 +307,7 @@ class UserInfoCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return FutureBuilder<DocumentSnapshot>(
       future: FirebaseFirestore.instance
-          .collection('artifacts/default-app-id/public/data/users')
+          .collection('users') 
           .doc(userId)
           .get(),
       builder: (context, snapshot) {
@@ -226,14 +318,16 @@ class UserInfoCard extends StatelessWidget {
           return const Card(
             child: ListTile(
               title: Text('Unknown User'),
-              subtitle: Text('Error loading user data. Check collection path.'),
+              subtitle: Text('Error loading user data.'),
             ),
           );
         }
 
         final userData = snapshot.data!.data() as Map<String, dynamic>;
-        final String username = userData['name'] ?? 'N/A';
-        final String location = userData['address'] ?? '';
+        final String username = userData['username'] ?? 'N/A';
+        final String shopName = userData['shopName'] ?? 'N/A';
+        final GeoPoint? location = userData['geopoint'];
+        final String phoneNumber = userData['phone'] ?? 'N/A';
 
         return Card(
           elevation: 2,
@@ -249,19 +343,22 @@ class UserInfoCard extends StatelessWidget {
                 ),
                 const Divider(),
                 _buildInfoRow(context, Icons.receipt_long, 'Order Number',
-                    '#${orderId.substring(0, 8)}...'),
-                _buildInfoRow(context, Icons.person, 'Username', username),
-                _buildInfoRow(context, Icons.store, 'Shop Name', 'MoeGyi Shop'),
+                    orderData['orderNumber'] ?? 'N/A'),
+                _buildInfoRow(context, Icons.confirmation_number, 'Order ID', orderId),
+                _buildInfoRow(context, Icons.person, 'User ID', userId),
+                _buildInfoRow(context, Icons.person_outline, 'Username', username),
+                _buildInfoRow(context, Icons.phone, 'Phone Number', phoneNumber),
+                _buildInfoRow(context, Icons.store, 'Shop Name', shopName),
                 ListTile(
                   contentPadding: EdgeInsets.zero,
                   leading:
                       Icon(Icons.location_on, color: Theme.of(context).primaryColor),
                   title: const Text('Location'),
                   subtitle: Text(
-                    location.isNotEmpty ? location : 'Not Provided',
+                    location != null ? "View on Map" : 'Not Provided',
                     style: TextStyle(
-                      color: location.isNotEmpty ? Colors.blue : Colors.grey,
-                      decoration: location.isNotEmpty
+                      color: location != null ? Colors.blue : Colors.grey,
+                      decoration: location != null
                           ? TextDecoration.underline
                           : TextDecoration.none,
                     ),
