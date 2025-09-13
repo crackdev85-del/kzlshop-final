@@ -34,13 +34,13 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   }
 
   void _showEditQuantityDialog(BuildContext context, CartItem item, int index) {
-    final TextEditingController _quantityController = TextEditingController(text: item.quantity.toString());
+    final TextEditingController quantityController = TextEditingController(text: item.quantity.toString());
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: Text('Edit Quantity'),
         content: TextField(
-          controller: _quantityController,
+          controller: quantityController,
           keyboardType: TextInputType.number,
           decoration: InputDecoration(labelText: 'Quantity'),
         ),
@@ -51,7 +51,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
           ),
           TextButton(
             onPressed: () {
-              final newQuantity = int.tryParse(_quantityController.text);
+              final newQuantity = int.tryParse(quantityController.text);
               if (newQuantity != null && newQuantity > 0) {
                 _updateOrderQuantity(index, newQuantity);
                 Navigator.of(context).pop();

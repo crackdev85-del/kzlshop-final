@@ -18,6 +18,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordController = TextEditingController();
   bool _isLoading = false;
   String? _errorMessage;
+  bool _isPasswordVisible = false;
 
   Future<void> _login() async {
     if (!_formKey.currentState!.validate()) {
@@ -95,17 +96,30 @@ class _LoginScreenState extends State<LoginScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                Image.asset(
+                  'assets/images/login.png',
+                  height: 150,
+                ),
+                const SizedBox(height: 24),
                 Text(
-                  'Welcome Back!',
+                  'မင်္ဂလာပါ!',
                   textAlign: TextAlign.center,
                   style: theme.textTheme.headlineLarge
-                      ?.copyWith(fontWeight: FontWeight.bold),
+                      ?.copyWith(fontWeight: FontWeight.bold, color: Colors.pink),
+                  
+                ),
+                Text(
+                  'မိုးကြီးမှကြိုဆိုပါတယ်',
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.headlineLarge
+                      ?.copyWith(fontWeight: FontWeight.bold, color: Colors.pink),
+                  
                 ),
                 const SizedBox(height: 8),
                 Text(
                   'Sign in to your account',
                   textAlign: TextAlign.center,
-                  style: theme.textTheme.titleMedium,
+                  style: theme.textTheme.titleMedium?.copyWith(color: Colors.pink),
                 ),
                 const SizedBox(height: 48),
                 TextFormField(
@@ -124,11 +138,21 @@ class _LoginScreenState extends State<LoginScreen> {
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _passwordController,
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     labelText: 'Password',
-                    prefixIcon: Icon(Icons.lock_outline),
+                    prefixIcon: const Icon(Icons.lock_outline),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _isPasswordVisible = !_isPasswordVisible;
+                        });
+                      },
+                    ),
                   ),
-                  obscureText: true,
+                  obscureText: !_isPasswordVisible,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please enter your password';
@@ -154,7 +178,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text("Don't have an account?"),
+                    const Text("Don't have an account?", style: TextStyle(color: Colors.pink)),
                     TextButton(
                       onPressed: () {
                         Navigator.push(
@@ -164,7 +188,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         );
                       },
-                      child: const Text('Sign Up'),
+                      child: const Text('Sign Up', style: TextStyle(color: Colors.pink)),
                     ),
                   ],
                 ),
