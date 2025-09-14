@@ -24,14 +24,20 @@ class _EditUserScreenState extends State<EditUserScreen> {
   @override
   void initState() {
     super.initState();
-    final userData = widget.userDoc.data() as Map<String, dynamic>;
-    _usernameController = TextEditingController(text: userData['username']);
-    _phoneNumberController = TextEditingController(text: userData['phoneNumber']);
-    _shopNameController = TextEditingController(text: userData['shopName']);
-    _addressController = TextEditingController(text: userData['address']);
-    _townshipController = TextEditingController(text: userData['township']);
-    _locationController = TextEditingController(text: userData['location']);
-    _roleController = TextEditingController(text: userData['role']);
+    final data = widget.userDoc.data();
+    Map<String, dynamic> userData = {};
+
+    if (data is Map<String, dynamic>) {
+      userData = data;
+    }
+
+    _usernameController = TextEditingController(text: userData['username']?.toString() ?? '');
+    _phoneNumberController = TextEditingController(text: userData['phoneNumber']?.toString() ?? '');
+    _shopNameController = TextEditingController(text: userData['shopName']?.toString() ?? '');
+    _addressController = TextEditingController(text: userData['address']?.toString() ?? '');
+    _townshipController = TextEditingController(text: userData['township']?.toString() ?? '');
+    _locationController = TextEditingController(text: userData['location']?.toString() ?? '');
+    _roleController = TextEditingController(text: userData['role']?.toString() ?? 'user');
   }
 
   Future<void> _updateUser() async {

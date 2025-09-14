@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:moegyi/constants.dart';
+import 'package:path_provider/path_provider.dart';
 
 class SettingsTab extends StatelessWidget {
   const SettingsTab({super.key});
@@ -16,18 +17,21 @@ class SettingsTab extends StatelessWidget {
       final data = snapshot.docs.map((doc) => doc.data()).toList();
       final jsonString = const JsonEncoder.withIndent('  ').convert(data);
 
-      final result = await FilePicker.platform.saveFile(
-        dialogTitle: 'Save File As',
-        fileName: fileName,
-        type: FileType.custom,
-        allowedExtensions: ['json'],
+      final directory = await getExternalStorageDirectory();
+      final path = await FilePicker.platform.getDirectoryPath(
+        dialogTitle: 'Save File To',
+        initialDirectory: directory?.path,
       );
 
-      if (result != null) {
-        final file = File(result);
+      if (path != null) {
+        final file = File('$path/$fileName');
         await file.writeAsString(jsonString);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Exported to $result')),
+          SnackBar(content: Text('Exported to $path/$fileName')),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Export canceled.')),
         );
       }
     } catch (error) {
