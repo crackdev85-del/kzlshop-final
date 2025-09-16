@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:moegyi/providers/category_provider.dart';
 import 'package:provider/provider.dart';
-
 import 'package:moegyi/firebase_options.dart';
 import 'package:moegyi/widgets/auth_wrapper.dart';
 import 'package:moegyi/providers/cart_provider.dart';
@@ -74,7 +73,7 @@ class MyApp extends StatelessWidget {
       ),
       textTheme: appTextTheme,
       appBarTheme: AppBarTheme(
-        backgroundColor: skyBlue,
+        backgroundColor: pink,
         foregroundColor: Colors.black,
         titleTextStyle: GoogleFonts.oswald(
           fontSize: 24,
@@ -111,7 +110,7 @@ class MyApp extends StatelessWidget {
         displayColor: Colors.white,
       ),
       appBarTheme: AppBarTheme(
-        backgroundColor: Colors.grey[850],
+        backgroundColor: pink,
         foregroundColor: Colors.white,
         titleTextStyle: GoogleFonts.oswald(
           fontSize: 24,

@@ -25,24 +25,6 @@ class CartItemCard extends StatelessWidget {
         padding: const EdgeInsets.all(10.0),
         child: Row(
           children: [
-            // Product Image
-            ClipRRect(
-              borderRadius: BorderRadius.circular(8.0),
-              child: Image.network(
-                cartItem.image,
-                width: 70,
-                height: 70,
-                fit: BoxFit.cover,
-                errorBuilder: (ctx, err, stack) => Container(
-                  width: 70,
-                  height: 70,
-                  color: Colors.grey[200],
-                  child: Icon(Icons.shopping_bag_outlined, color: Colors.grey[400], size: 35),
-                ),
-              ),
-            ),
-            const SizedBox(width: 15),
-
             // Product Details
             Expanded(
               child: Column(

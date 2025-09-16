@@ -4,8 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:moegyi/constants.dart';
 import 'package:moegyi/providers/cart_provider.dart';
-import 'package:moegyi/screens/user/cart_screen.dart';
-import 'package:moegyi/widgets/fade_page_route.dart';
 import 'package:provider/provider.dart';
 
 // A new widget to fetch and display the category name from a categoryId.
@@ -263,10 +261,14 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                               currency: 'MMK',
                             );
 
-                            Navigator.push(
-                              context,
-                              FadePageRoute(child: const CartScreen()),
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('$name added to cart!'),
+                                duration: const Duration(seconds: 2),
+                              ),
                             );
+
+                            Navigator.of(context).pop();
                           },
                           icon: const Icon(Icons.add_shopping_cart),
                           label: const Text('Add to Cart'),

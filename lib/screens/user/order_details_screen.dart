@@ -47,19 +47,21 @@ class OrderDetailsScreen extends StatelessWidget {
                 style: theme.textTheme.headlineSmall,
               ),
               const SizedBox(height: 16),
+              // Builds a list of items in the order.
               ListView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 itemCount: order.products.length,
                 itemBuilder: (context, index) {
                   final item = order.products[index];
+                  final totalPrice = item.price * item.quantity;
                   return Card(
                     elevation: 2,
                     margin: const EdgeInsets.symmetric(vertical: 4),
                     child: ListTile(
                       title: Text(item.name),
-                      subtitle: Text('Quantity: ${item.quantity}'),
-                      trailing: Text('${item.price.toInt()} Kyat'),
+                      subtitle: Text('Quantity: ${item.quantity} x ${item.price.toInt()} Kyat'),
+                      trailing: Text('${totalPrice.toInt()} Kyat'),
                     ),
                   );
                 },

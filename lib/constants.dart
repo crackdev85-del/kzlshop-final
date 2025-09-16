@@ -10,6 +10,8 @@ const String announcementsCollectionPath =
 const String usersCollectionPath = 'artifacts/default-app-id/public/data/users';
 const String ordersCollectionPath =
     'artifacts/default-app-id/public/data/orders';
+const String contactsCollectionPath =
+    'artifacts/default-app-id/public/data/contacts';
 
 // SETTINGS: single doc to hold shop name, logo and splash
 const String settingsCollectionPath =

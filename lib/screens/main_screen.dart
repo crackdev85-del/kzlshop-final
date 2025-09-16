@@ -1,12 +1,10 @@
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'package:moegyi/main.dart';
 import 'package:moegyi/screens/tabs/home_tab.dart';
 import 'package:moegyi/screens/tabs/profile_tab.dart';
-import 'package:moegyi/screens/tabs/cart_tab.dart';
-import 'package:moegyi/screens/tabs/wishlist_tab.dart';
+import 'package:moegyi/screens/tabs/contact_tab.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -43,8 +41,7 @@ class _MainScreenState extends State<MainScreen> {
     final themeProvider = Provider.of<ThemeProvider>(context);
     final List<Widget> widgetOptions = <Widget>[
       HomeTab(pageController: _pageController),
-      const WishlistTab(),
-      const CartTab(),
+      const ContactTab(),
       const ProfileTab(),
     ];
 
@@ -60,18 +57,15 @@ class _MainScreenState extends State<MainScreen> {
         children: widgetOptions,
       ),
       bottomNavigationBar: BottomNavigationBar(
+        backgroundColor: Colors.pink,
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
             label: 'Home',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.favorite_border),
-            label: 'Wishlist',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.shopping_cart),
-            label: 'Cart',
+            icon: Icon(Icons.phone),
+            label: 'Contact',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person),
@@ -80,7 +74,7 @@ class _MainScreenState extends State<MainScreen> {
         ],
         currentIndex: _selectedIndex,
         selectedItemColor: Theme.of(context).colorScheme.primary,
-        unselectedItemColor: Colors.grey,
+        unselectedItemColor: const Color.fromARGB(255, 245, 245, 245),
         onTap: _onItemTapped,
       ),
     );

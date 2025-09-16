@@ -11,6 +11,25 @@ class ProductCard extends StatelessWidget {
 
   const ProductCard({super.key, required this.product});
 
+  // Helper function to get category name from categoryId
+  Future<String> _getCategoryName(String categoryId) async {
+    if (categoryId.isEmpty) {
+      return 'Uncategorized';
+    }
+    try {
+      final categoryDoc = await FirebaseFirestore.instance
+          .collection('categories')
+          .doc(categoryId)
+          .get();
+      if (categoryDoc.exists) {
+        return categoryDoc.data()?['name'] ?? 'Uncategorized';
+      }
+    } catch (e) {
+      print('Error fetching category: $e');
+    }
+    return 'Uncategorized';
+  }
+
   @override
   Widget build(BuildContext context) {
     Provider.of<CartProvider>(context, listen: false);
@@ -20,7 +39,8 @@ class ProductCard extends StatelessWidget {
 
     final imageUrl = productData[Constants.productImageUrl] as String?;
     final name = productData[Constants.productName] as String? ?? 'No Name';
-    final category = productData['category'] as String? ?? 'Uncategorized'; // Used string literal
+    final categoryId =
+        productData['categoryId'] as String? ?? ''; // Changed to categoryId
     final price = (productData[Constants.productPrice] ?? 0).toDouble();
 
     return GestureDetector(
@@ -53,26 +73,37 @@ class ProductCard extends StatelessWidget {
                   tag: 'product-image-${product.id}',
                   child: (imageUrl != null && imageUrl.isNotEmpty)
                       ? (imageUrl.startsWith('data:image'))
-                          ? Image.memory(
-                              base64.decode(imageUrl.split(',').last),
-                              fit: BoxFit.cover,
-                            )
-                          : Image.network(
-                              imageUrl,
-                              fit: BoxFit.cover,
-                              loadingBuilder: (context, child, loadingProgress) {
-                                if (loadingProgress == null) return child;
-                                return Center(
-                                  child: CircularProgressIndicator(
-                                    value: loadingProgress.expectedTotalBytes != null
-                                        ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
-                                        : null,
-                                  ),
-                                );
-                              },
-                              errorBuilder: (context, error, stackTrace) =>
-                                  const Icon(Icons.broken_image, size: 40, color: Colors.grey),
-                            )
+                            ? Image.memory(
+                                base64.decode(imageUrl.split(',').last),
+                                fit: BoxFit.cover,
+                              )
+                            : Image.network(
+                                imageUrl,
+                                fit: BoxFit.cover,
+                                loadingBuilder:
+                                    (context, child, loadingProgress) {
+                                      if (loadingProgress == null) return child;
+                                      return Center(
+                                        child: CircularProgressIndicator(
+                                          value:
+                                              loadingProgress
+                                                      .expectedTotalBytes !=
+                                                  null
+                                              ? loadingProgress
+                                                        .cumulativeBytesLoaded /
+                                                    loadingProgress
+                                                        .expectedTotalBytes!
+                                              : null,
+                                        ),
+                                      );
+                                    },
+                                errorBuilder: (context, error, stackTrace) =>
+                                    const Icon(
+                                      Icons.broken_image,
+                                      size: 40,
+                                      color: Colors.grey,
+                                    ),
+                              )
                       : Container(
                           color: Colors.grey[200],
                           child: const Icon(
@@ -97,13 +128,21 @@ class ProductCard extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 4),
-                    Text(
-                      category,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.textTheme.bodySmall?.color?.withOpacity(0.7),
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                    FutureBuilder<String>(
+                      future: _getCategoryName(categoryId),
+                      builder: (context, snapshot) {
+                        final categoryName =
+                            snapshot.data ?? ' '; // Show space while loading
+                        return Text(
+                          categoryName,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.textTheme.bodySmall?.color
+                                ?.withOpacity(0.7),
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        );
+                      },
                     ),
                     const SizedBox(height: 8),
                     Text(
