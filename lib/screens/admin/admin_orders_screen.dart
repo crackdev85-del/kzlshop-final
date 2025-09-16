@@ -173,13 +173,16 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
                           const Text('Products', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                           const SizedBox(height: 8),
                           ...products.map((prod) {
+                            final num price = prod['price'] ?? 0;
+                            final int quantity = prod['quantity'] ?? 0;
+                            final num productTotal = price * quantity;
                             return Padding(
                               padding: const EdgeInsets.symmetric(vertical: 4.0),
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Expanded(child: Text('${prod['name']} (x${prod['quantity']})')),
-                                  Text('${(prod['price']).toStringAsFixed(2)} Ks'),
+                                  Expanded(child: Text('${prod['name']} (x$quantity) @ ${price.toStringAsFixed(0)} Ks')),
+                                  Text('${productTotal.toStringAsFixed(0)} Ks'),
                                 ],
                               ),
                             );
