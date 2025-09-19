@@ -51,7 +51,7 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
     });
     try {
       final snapshot = await FirebaseFirestore.instance
-          .collection('categories') // Corrected the collection path
+          .collection(categoriesCollectionPath) // Corrected the collection path
           .orderBy('name')
           .get();
       if (mounted) {

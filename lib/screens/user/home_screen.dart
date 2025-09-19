@@ -76,7 +76,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return SizedBox(
       height: 110,
       child: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance.collection('categories').snapshots(), // Keep hardcoded path for categories
+        stream: FirebaseFirestore.instance.collection(categoriesCollectionPath).snapshots(), // Keep hardcoded path for categories
         builder: (context, snapshot) {
           if (snapshot.hasError) {
             return const Center(child: Text('Error loading categories'));

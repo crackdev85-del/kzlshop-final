@@ -18,7 +18,7 @@ class ProductCard extends StatelessWidget {
     }
     try {
       final categoryDoc = await FirebaseFirestore.instance
-          .collection('categories')
+          .collection(categoriesCollectionPath)
           .doc(categoryId)
           .get();
       if (categoryDoc.exists) {

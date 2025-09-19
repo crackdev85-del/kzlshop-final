@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
+import 'package:moegyi/constants.dart';
 import 'package:moegyi/models/cart_item.dart';
 
 class Order with ChangeNotifier {
@@ -44,7 +45,7 @@ class Order with ChangeNotifier {
 
     final itemFutures = (data['items'] as List).map((itemData) async {
       final productDoc = await FirebaseFirestore.instance
-          .collection('products')
+          .collection(productsCollectionPath)
           .doc(itemData['productId'])
           .get();
 

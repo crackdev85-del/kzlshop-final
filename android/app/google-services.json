@@ -1,87 +1,46 @@
 {
   "project_info": {
-    "project_number": "405459867937",
-    "project_id": "kzlshop",
-    "storage_bucket": "kzlshop.firebasestorage.app"
+    "project_number": "271385741888",
+    "firebase_url": "https://moegyishop-820a2-default-rtdb.firebaseio.com",
+    "project_id": "moegyishop-820a2",
+    "storage_bucket": "moegyishop-820a2.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:405459867937:android:49a3662825f88bd1420660",
+        "mobilesdk_app_id": "1:271385741888:android:13613504286b656a0b6da5",
         "android_client_info": {
           "package_name": "com.moegyi.distibut"
         }
       },
-      "oauth_client": [
-        {
-          "client_id": "405459867937-oe24f4nv92bhgm7d5pnmi9lcv5ocl9ac.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.moegyi.distibut",
-            "certificate_hash": "eedb240e399f5bb281b0ccd848be94f65f1e5dff"
-          }
-        },
-        {
-          "client_id": "405459867937-si9se8hqqlm2sg19tt1gsoeaif4msfbg.apps.googleusercontent.com",
-          "client_type": 3
-        }
-      ],
+      "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyDCpxwrft4bVU3g2q2cGb-3TghMBPRp0Ms"
+          "current_key": "AIzaSyB-NvAQYtytzNWy0d2y95f6Q1xVec-4n-w"
         }
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": [
-            {
-              "client_id": "405459867937-si9se8hqqlm2sg19tt1gsoeaif4msfbg.apps.googleusercontent.com",
-              "client_type": 3
-            },
-            {
-              "client_id": "405459867937-hei7ab5su64umpgg5ak0g8alnmo94fri.apps.googleusercontent.com",
-              "client_type": 2,
-              "ios_info": {
-                "bundle_id": "com.example.myapp"
-              }
-            }
-          ]
+          "other_platform_oauth_client": []
         }
       }
     },
     {
       "client_info": {
-        "mobilesdk_app_id": "1:405459867937:android:6b4859747167b969420660",
+        "mobilesdk_app_id": "1:271385741888:android:ff4d18d8e25555530b6da5",
         "android_client_info": {
           "package_name": "com.moegyi.shop"
         }
       },
-      "oauth_client": [
-        {
-          "client_id": "405459867937-si9se8hqqlm2sg19tt1gsoeaif4msfbg.apps.googleusercontent.com",
-          "client_type": 3
-        }
-      ],
+      "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyDCpxwrft4bVU3g2q2cGb-3TghMBPRp0Ms"
+          "current_key": "AIzaSyB-NvAQYtytzNWy0d2y95f6Q1xVec-4n-w"
         }
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": [
-            {
-              "client_id": "405459867937-si9se8hqqlm2sg19tt1gsoeaif4msfbg.apps.googleusercontent.com",
-              "client_type": 3
-            },
-            {
-              "client_id": "405459867937-hei7ab5su64umpgg5ak0g8alnmo94fri.apps.googleusercontent.com",
-              "client_type": 2,
-              "ios_info": {
-                "bundle_id": "com.example.myapp"
-              }
-            }
-          ]
+          "other_platform_oauth_client": []
         }
       }
     }

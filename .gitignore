@@ -1,3 +1,4 @@
+
 # Miscellaneous
 *.class
 *.log
@@ -18,18 +19,92 @@ out/
 gen/
 
 # Flutter
-.metadata
-.packages
 .flutter-plugins
 .flutter-plugins-dependencies
-build/
-ios/
-android/
-web/
-.dart_tool/
+.packages
+.pub-cache/
+.pub/
+/build/
+ios/Flutter/App.framework
+ios/Flutter/Flutter.framework
+ios/Flutter/Generated.xcconfig
+ios/Flutter/flutter_export_environment.sh
+ios/Runner/GeneratedPluginRegistrant.h
+ios/Runner/GeneratedPluginRegistrant.m
 
-# Nix
-result
-result-*
-.direnv
-.idx/
+# Android
+.gradle/
+**/build/
+**/captures/
+android/app/src/main/assets/flutter_assets/
+android/app/google-services.json
+android/key.properties
+local.properties
+/android/app/build/
+/android/app/src/main/java/io/flutter/plugins/GeneratedPluginRegistrant.java
+/android/build/
+/android/gradle/
+/android/gradlew
+/android/gradlew.bat
+/android/local.properties
+/android/.gradle/
+
+# iOS
+.ios/
+/ios/build/
+/ios/Pods/
+/ios/Runner.xcworkspace/
+/ios/Runner.xcodeproj/project.xcworkspace/
+/ios/Runner.xcodeproj/xcuserdata/
+/ios/Flutter/Debug.xcconfig
+/ios/Flutter/Release.xcconfig
+/ios/.symlinks/
+/ios/Flutter/
+
+# Build artifacts
+build/
+*.o
+*.a
+*.so
+*.jar
+*.war
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# IDE specific files
+.idea/
+*.user
+*.userosscache
+*.suo
+nbproject/
+project.properties
+project.xml
+*.kdev4
+
+# Dart
+.dart_tool/
+.packages
+pubspec.lock
+
+# Other
+/coverage
+/doc/api/
+.pub-cache/
+.pub/
+/build/
+/ios/Pods/
+/ios/Runner.xcworkspace/
+/ios/Runner.xcodeproj/project.xcworkspace/
+/ios/Runner.xcodeproj/xcuserdata/
+
+# Sensitive files
+secrets.json
+.env
+*.pem
+*.key
+google-services.json
+GoogleService-Info.plist
+/android/app/google-services.json
+/ios/Runner/GoogleService-Info.plist

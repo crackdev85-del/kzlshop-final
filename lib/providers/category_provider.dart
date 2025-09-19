@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:moegyi/constants.dart';
 import '../models/category.dart';
 
 class CategoryProvider with ChangeNotifier {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final String _collectionPath = 'categories'; // Collection path is defined directly here
+  final String _collectionPath = categoriesCollectionPath; // Collection path is defined directly here
 
   Stream<List<Category>> getCategories() {
     return _firestore.collection(_collectionPath).snapshots().map((snapshot) {
