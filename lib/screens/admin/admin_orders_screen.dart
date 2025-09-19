@@ -181,7 +181,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Expanded(child: Text('${prod['name']} (x$quantity) @ ${price.toStringAsFixed(0)} Ks')),
+                                  Expanded(child: Text('${prod['name']} (x$quantity) - ${price.toStringAsFixed(0)} Ks')),
                                   Text('${productTotal.toStringAsFixed(0)} Ks'),
                                 ],
                               ),

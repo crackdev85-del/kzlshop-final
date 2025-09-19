@@ -228,7 +228,7 @@ class _HomeScreenState extends State<HomeScreen> {
           return <Widget>[
             SliverAppBar(
               title: Text(
-                'KZL Shop',
+                'MOEGYI Shop',
                 style: theme.textTheme.titleLarge?.copyWith(
                   color: theme.colorScheme.onPrimary,
                   fontWeight: FontWeight.bold,
